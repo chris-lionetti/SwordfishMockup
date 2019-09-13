@@ -1,0 +1,30 @@
+{
+    "$id": "http://redfish.dmtf.org/schemas/swordfish/v1/DataProtectionLineOfService.v1_2_0.json",
+    "$schema": "http://redfish.dmtf.org/schemas/v1/redfish-schema-v1.json",
+    "copyright": "Copyright 2016-2019 Storage Networking Industry Association (SNIA), USA. All rights reserved. For the full SNIA copyright policy, see http://www.snia.org/about/corporate_info/copyright",
+    "definitions": {
+        "DataProtectionLineOfService": {
+            "description": "Describes a data protection service option.",
+            "longDescription": "This service option describes a replica that protects data from loss. The requirements must be met collectively by the communication path and the replica.",
+            "properties": {
+                "IsIsolated": {                     "type": [ "boolean" ],
+                    "description": "The replica is in a separate fault domain.",
+                    "longDescription": "True shall indicate that the replica is in a separate fault domain from its source. The default value of this property is false.",
+                },
+                "MinLifetime": {                    "type": [ "string" ],
+                    "description": "Minimum lifetime (seconds) that replica must be maintained.",
+                    "longDescription": "The value shall be an ISO 8601 duration that specifies the minimum required lifetime of the replica. Note: The maximum number of replicas can be determined using this value together with the replicaSchedule.",
+                },
+                "ReplicaAccessLocation": {
+                    "$ref": "http://redfish.dmtf.org/schemas/v1/Resource.v1_3_0.json#/definitions/Location",
+                    "description": "Location that supplies data access to the replica.",
+                    "longDescription": "This value shall be used if the data access location of the replica is required to be at a specific location.   Note 1: The location value may be granular.  Note 2: A value may be required for some regulatory compliance."
+                },
+                "Schedule": {
+                    "$ref": "http://redfish.dmtf.org/schemas/v1/Schedule.json#/definitions/Schedule",
+                    "description": "A schedule for making periodic point in time replicas.",
+                    "longDescription": "If a replica is made periodically, the value shall define the schedule."
+}   },  },  },
+    "owningEntity": "SNIA",
+    "title": "#DataProtectionLineOfService.v1_2_0"
+}
