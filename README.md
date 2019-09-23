@@ -1,8 +1,5 @@
----
-DocTitle:  Catfish Mockup
----
-# Catfish Mockup:
-  *  A simple, minimal RedfishSwordfish Service and mockup creator.
+# Catfish:
+  *  A simple, minimal Redfish/Swordfish Service and mockup creator and responder.
 
 # Top Level Description:
 This set of powershell commands when used in conjunction with the HPE Nimble Storage PowerShell toolkit will allow you to create a local repository which represents a complete Swordfish model for a Nimble Storage Array. 
