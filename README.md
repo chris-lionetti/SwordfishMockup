@@ -2,38 +2,24 @@
 DocTitle:  Catfish Mockup
 ---
 # Catfish Mockup:
-  *  A simple, minimal Redfish Service
-  *  For a monolithic Server
-  *  Aligned with: OCP Remote Machine Management Spec feature set
-
+  *  A simple, minimal RedfishSwordfish Service and mockup creator.
 
 # Top Level Description:
-  * A Monolithic server:
-      * One ComputerSystem
-      * One Chassis
-      * One Manager
-  --Provides basic management features aligned with OCP Remote Machine Management Spec 1.01:
-      * Power-on/off/reset
-      * Boot to PXE, HDD, BIOS setup (boot override)
-      * 4 temp sensors per DCMI (CPU1, CPU2, Board, Inlet)
-      * Simple Power Reading, and  DCMI Power Limiting
-      * Fan Monitoring w/ redundancy
-      * Set asset tag and Indicator LED
-      * Basic inventory (serial#, model, SKU, Vendor, BIOS ver…)
-      * User Management
-      * BMC management: get/set IP, version, enable/disable protocol
+This set of powershell commands when used in conjunction with the HPE Nimble Storage PowerShell toolkit will allow you to create a local repository which represents a complete Swordfish model for a Nimble Storage Array. 
+When you load the HPE Nimble PowerShell Toolkit, connect to the array, and then use the Create command included in this module, It will in tern examine the Nimble Array and gather a list of all of the chassis metrics, and then it will create on the local filesytem a stucture that matches the swordfish expectation. i.e. It will create a folder called C:\SwordfishMockup\Redfish\v1\etc.
+The command is broken into subcommands that are stored in difference files to make troubleshooting and expanding more easy. The command will currently query all of the chassis information, the Storage Pools, the Volumes, The Endpoints (both Initiator and Target),Endpoint Groups, as well as Storage Groups. 
+Additionally. included in this code base is a Listener.ps1 which can be pointed to the freshly downloaded mockup (either generated from a live array, or downloaded from this repository). This will let you test a Swordfish consumer against a Simulator that can be very easily populated. It also allows for testing of your mapping process from your custom API to a Swordfish API.
 
-# What it does NOT have -- that the Redfish 1.0 model supports
-   * No PSUs in model  (RMM spec did not include PSUs) 
-   * No ProcessorInfo, MemoryInfo, StorageInfo, System-EthernetInterfaceInfo
-   * No Tasks
-   * JsonSchema and Registries collections left out (since that is optional)
-   * No EventService
-   * Remote Machine Management spec used basic PET alerts
+--Provides basic management features aligned with Swordfish Management Spec 1.10:
 
+# What it does NOT have -- that the Swordfish 1.10 model supports
+   * No support for Class of Service
+   * No Support for DataProtectionLines of service (yet)
+   * No Support for Events (yet)
+   * No Support for Replication (yet)
 
-# Discussion
-   * Opportunity to define some Redfish ‘Integration Recipe’ that specify
-      * What APIs and properties are supported / required
-      * How to capture
+# Outstanding bugs.
+   * Currently if a volume name or snapshot name contains a ':' or '\' the file cannot be saved since it is reserved in file systems to denote drives and folders.
 
+# Additional information
+   * I have also added the output from an exisiting Nimble Array as sample data since it will allow the listener service to be run without having to connect to a Nimble Array first which leads to faster development cycles.
