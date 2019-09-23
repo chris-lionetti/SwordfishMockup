@@ -23,3 +23,6 @@ Additionally. included in this code base is a Listener.ps1 which can be pointed 
 
 # Additional information
    * I have also added the output from an exisiting Nimble Array as sample data since it will allow the listener service to be run without having to connect to a Nimble Array first which leads to faster development cycles.
+
+# Why the project name CatFish?
+Well, it needed to be tied to RedFish, Swordfish, *fish scheme. It also needed to represent a PowerShell module gathering real information from an actual Array, and re-representing that data in a Swordfish compatible way back to clients looking for actual Swordfish implementations. This kind of sounds like the internet dating phenomenon called 'catfishing'.
