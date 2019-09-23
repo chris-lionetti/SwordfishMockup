@@ -1,11 +1,3 @@
-function Get-v1name
-{   param(
-
-)
-
-}
-
-
 # Create a listener on port 8000
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add('http://+:5000/') 
