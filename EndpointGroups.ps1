@@ -1,59 +1,69 @@
-function Create-EndpointGroupRootiSCSI {	
-	param( 	$initiatorGroups
+function Get-SFEndpointGroupRoot {	
+	param( 	$ShouldReturnObj=$True
 		 )
+	$InitiatorGroups = ( Get-NSInitiatorGroup )
 	$Members=@()
 	# First Populate the the InitiatorGroup list with the TargetEndpointGroup
 	# There is 1 Endpoint Group for all of the targets and another for each subnet
 	foreach($sub in get-nsSubnet)
 	{	if ($Sub.allow_iscsi -like 'True')
 		{	# This subnet allows iSCSI, it should become a target group
-			$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$Sub.name
+			$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$Sub.name
 							 }
 			$Members+=$localMembers
 	}	}
-	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets'
+	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets'
 					 }
 	$Members+=$localMembers
-	foreach ($group in $initiatorgroups)
-		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$Group.name
+	foreach ($group in $initiatorGroups)
+		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$group.name
 							 }
 			$Members+=$localMembers
 		}
 	$EPGRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroups';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups';
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups';
 					'@odata.type'			=	'#EndpointGroups_1_4_0.EndpointGroups';
 					Name					=	'Nimble Endpoint Groups';
 					'Members@odata.count'	=	($Members).count;
 					Members					=	@( $Members )
 			   }
-	FolderAndFile $EPGRoot  ("\StorageServices\"+$NimbleSerial+"\EndpointGroups\")
-}
-		
+	return $EPGRoot
+}	
 
-function Create-InitiatorEndpointGroupsIndex {
-	param( 	$InitiatorGroups,
-			$AccessMaps
+function Get-SFEndpointGroup {
+	param(
+			$EndpointGroupName
+	)
+	$Result1 = Get-GFEndpointGroupInitiator -EndpointGroupName $EndpointGroupName
+	$Result2 = Get-SFEndpointGroupTarget -EndpointGroupName  $EndpointGroupName
+	if ($result1) { $result = $result1 } else { $result=$result2 }
+}
+
+function Get-SFInitiatorEndpointGroup {
+	param( 	$EndpointGroupName
 		 )
-	foreach($InitG in $InitiatorGroups)
-	{	$InitEP=@()
-		$StorGP=@()
-		if ( $InitG.iscsi_initiators -eq '')
+	$InitG = ( Get-NSInitiatorGroup -name $EndpointGroupName )
+	write-host "Getting Hosname $EndpointGroupName"
+	$AccessMaps = ( Get-NSAccessControlRecord )
+	$InitEP=@()
+	$StorGP=@()
+	if ( $InitG.iscsi_initiators -eq '')
 			{	$InitCol=$InitG.fc_initiators
 			} else 
 			{	$InitCol=$InitG.iscsi_initiators
 			}
-		foreach($IndInit in $InitCol)
+	foreach($IndInit in $InitCol)
 			{	$InitID=$IndInit.id
-				$InitEP+=@{		'@odata.id'	=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints/'+$IndInit.id	
+				$InitEP+=@{		'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$IndInit.id	
 			}			  }
-		foreach($Map in $AccessMaps)
+	foreach($Map in $AccessMaps)
 			{	if($Map.Initiator_Group_id -like $InitG.id)
-				{	$StorGP+=@{	'@odata.id'	=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StorageGroups/'+$Map.id	
+				{	$StorGP+=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id	
 			}	}			 }		
 		$EPG = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroup';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$InitG.name;
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$InitG.name;
 					'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
 					Name					=	$InitG.name;
 					Description				=	'Initiator EndpointGroup for '+$InitG.name;
@@ -63,15 +73,15 @@ function Create-InitiatorEndpointGroupsIndex {
 					Endpoints				=	@( $InitEP );
 					StorageGroups			=	@( $StorGP );
 				}
-		FolderAndFile $EPG ("StorageServices\"+$NimbleSerial+"\EndpointGroups\"+$InitG.name)
-	}
+	return $EPG
 }
 
-function Create-TargetEndpointGroupsIndex {
-	param( 	$InitiatorGroups,
-			$AccessMaps,
-			$subnets
+function Get-SFTargetEndpointGroup {
+	param( 	$EndpointGroupName	
 		 )
+	$InitiatorGroups = ( Get-NSInitiatorGroup )
+	$AccessMaps = ( Get-NSAccessControlRecord )
+	$Subnets = ( Get-NSSubnet )
 	foreach($sub in $subnets)
 	{	$TargEP=@()
 		$StorGP=@()
@@ -79,7 +89,7 @@ function Create-TargetEndpointGroupsIndex {
 		$NicList=$active.array_list.nic_list
 		foreach($nic in $NicList)
 		{	if ($Sub.name -like $nic.subnet_label)
-			{	$TargEP+=@{	'@odata.id'	= 	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints/'+$active.role+'_'+$nic.name	
+			{	$TargEP+=@{	'@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$active.role+'_'+$nic.name	
 						  }
 			}
 		}
@@ -98,7 +108,7 @@ function Create-TargetEndpointGroupsIndex {
 		}	}		}	}	}
 		$EPG = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroup';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$sub.name;
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name;
 					'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
 					Name					=	$sub.name;
 					id						=	$sub.id
@@ -109,7 +119,9 @@ function Create-TargetEndpointGroupsIndex {
 					Endpoints				=	@( $TargEP );
 					StorageGroups			=	@( $StorGP );
 				}
-		FolderAndFile $EPG ("StorageServices\"+$NimbleSerial+"\EndpointGroups\"+$Sub.name)
+		if ( $Sub.name -like $EndpointGroupName )
+				{	return $EPG
+				}
 	}
 	# This code creates the ALL_Group
 	$TargEPG=@()
@@ -120,19 +132,19 @@ function Create-TargetEndpointGroupsIndex {
 			foreach($map in $accessmaps)
 			{	if($Map.initiator_group_id -like $InitGroup.id)
 				{	#found a match
-					$StorGP+=@{'@odata.id'	= 	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StorageGroups/'+$map.id
+					$StorGP+=@{'@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$map.id
 							  }
 				}
 			}
 		}
 	}
 	foreach($sub in $subnets)
-	{	$TargEPG+=@{	'@odata.id'	=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$sub.name
+	{	$TargEPG+=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name
 				   }
 	}
 	$EPG = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 				'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroupCollection/'+$NimbleSerial+'/EndpointGroup';
-				'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets';
+				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets';
 				'@odata.type'			=	'#EndpointGroupCollection.v1_3_1.EndpointGroupCollection';
 				Name					=	$NimbleSerial+'_AllSubnets';
 				Description				=	'Target Group Default, collection of all Target Endpoint Groups';
@@ -142,9 +154,7 @@ function Create-TargetEndpointGroupsIndex {
 				Members					=	@( $TargEPG );
 				StorageGroups			=	@( $StorGP );
 			}
-	FolderAndFile $EPG ("StorageServices\"+$NimbleSerial+"\EndpointGroups\"+$NimbleSerial+'_AllSubnets')
+	if ( ($NimbleSerial+'_AllSubnets') -like $EndpointGroupName )
+		{	return $EPG
+		}
 }
-
-	
-
-

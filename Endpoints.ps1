@@ -1,45 +1,61 @@
-function Create-EndpointsRootiSCSI {	
-	param( 	$NetworkConfig,
-			$Initiators,
-			$Array	
-		 )
+function Get-SFEndpointRoot {	
+param()
+process{
 	$Members=@()
-	foreach ($set in $NetworkConfig)
+	$NetworkConfig=( Get-NSNetworkConfig )
+	foreach ($set in $NetworkConfig )
 		{	$configname = $Set.name
 			$AL = $set.array_list
 			$NL = $AL.Nic_list
 			foreach ( $EP in $NL)
 				{	$Endpointname=$configname+"_"+$EP.name
-					$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints/'+$Endpointname 
+					$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Endpointname 
 									 }
-					$Members+=$localMembers
+					if ($configname -like 'Active')
+					{	$Members+=$localMembers
+					}
 				}
-			if ($configname -like 'Active')
-			{	foreach ( $Initiator in $Initiators )
-				{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints/'+$Initiator.id 
-									 }
-					$Members+=$localMembers
-		}	}	}
+		}
+	foreach ( $Initiator in ( Get-NSInitiator ) )
+		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id 
+							 }
+			$Members+=$localMembers
+		}	
 	$EPRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoints';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints';
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints';
 					'@odata.type'			=	'#EndpointsCollection_1_4_0.EndpointsCollection';
 					Name					=	'Nimble Endpoints Collection';
 					'Members@odata.count'	=	(($NetworkConfig.array_list).nic_list).count;
 					Members					=	$Members
 			   }
-	FolderAndFile $EPRoot ("StorageServices\"+$NimbleSerial+"\Endpoints")
+	return $EPRoot
 }
-		
-function Create-EndpointsTargetsIndex {
-	param( 	$NetworkConfig,
-			$Array	)
+}
+
+function Get-SFEndpoint {
+param(	$EndpointName
+	 )
+process{
+	$result1 = Get-SFEndpointTarget 	-EndpointName $EndpointName
+	$result2 = Get-SFEndpointInitiator 	-EndpointName $EndpointName
+	if ($result1)	{	return $result1 
+					} else 
+					{	return $result2
+					}
+}
+}
+
+function Get-SFEndpointTarget {
+	param(	$EndpointName		
+		 )
+	$NetworkConfig = (Get-NSNetworkConfig)
 	foreach ($set in $NetworkConfig)
 		{	$configname = $Set.name
 			$AL = $set.array_list
 			$NL = $AL.Nic_list
 			foreach ( $EP in $NL)
-				{	$TheNic=( $Networkinterface | where { $_.name -like $EP.name -and $_.controller_name -like 'A' } )
+				{	$TheNic=( $Networkinterface | where-object { $_.name -like $EP.name -and $_.controller_name -like 'A' } )
 					$EPID = $TheNic.id
 					if ( $EPID.link_status -like 'link_status_up')
 						{	$EPHealth = 'OK'
@@ -50,7 +66,7 @@ function Create-EndpointsTargetsIndex {
 						}	
 					$EPRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 									'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
-									'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
+									'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
 									'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
 									Name					=	$configname+"_"+$EP.name;
 									EndpointRole			=	'Target';
@@ -60,31 +76,38 @@ function Create-EndpointsTargetsIndex {
 									Id						=	$EPid;
 									Status					=	@{	Health 	=	$EPHealth ;
 																	State 	= 	$EPState
-							   }								 }
-					FolderAndFile $EPRoot ("StorageServices\"+$NimbleSerial+"\Endpoints\"+$configname+"_"+$EP.name)
+																 }
+							   }
+					if ( ( $configname+"_"+$EP.name ) -like $EndpointName)
+					{ 	return $EPRoot
+					}
 }		}		}
 
-function Create-EndpointsInitiatorIndex {
-	param( 	$Initiators
-		 )
-	foreach ($initiator in $initiators)
-		{	$EP = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-						'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
-						'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
-						'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
-						Name					=	$Initiator.label;
-						EndpointRole			=	'Initiator';
-						Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
-						EndpointProtocol		=	'iSCSI';
-						IPv4Address				=	$Initiator.Ip_Address;
-						Id						=	$Initiator.id;
-						Identifiers				=	@(	@{	DurableNameFormat	=	'iqn';
-															DurableName			=	$Initiator.iqn
-														 };
-														@{	DurableNameFormat	=	'Nimble ID';
-															DurableName			=	$Initiator.id
-														 }
-													 )
-				   }
-			FolderAndFile $EP $("StorageServices\"+$NimbleSerial+"\Endpoints\"+$Initiator.id)
-}		}
+function Get-SFEndpointInitiator {
+param( 	$EndpointName	
+	 )
+process{
+	$Initiator = ( Get-NSInitiator -id $EndpointName )
+	$EP = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
+					'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
+					Name					=	$Initiator.label;
+					EndpointRole			=	'Initiator';
+					Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
+					EndpointProtocol		=	'iSCSI';
+					IPv4Address				=	$Initiator.Ip_Address;
+					Id						=	$Initiator.id;
+					Identifiers				=	@(	@{	DurableNameFormat	=	'iqn';
+														DurableName			=	$Initiator.iqn
+													 };
+												@{	DurableNameFormat	=	'Nimble ID';
+														DurableName			=	$Initiator.id
+													 }
+												 )
+		   }
+	if ($Initiator)
+		{	return $EP
+		}		
+}
+}

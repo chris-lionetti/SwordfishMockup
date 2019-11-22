@@ -1,30 +1,33 @@
-
-function Create-PoolFolderRoot {	
-	param( 	$Pools
-		 )
+function Get-SFPoolRoot {	
+param( 	
+	 )
+process{
 	$Members=@()
+	$pools=( Get-NsPool )
 	foreach ($pool in $Pools)
 		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StoragePools/'+$Pool.name 
 							 }
 			$Members+=$localMembers
 		}
 	$PoolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/StoragePools';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StoragePools';
+					'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools';
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
 					'@odata.type'			=	'#StoragePoolsCollection_1_0_0.StoragePoolsCollection';
 					Name					=	'NimblePoolCollection';
 					'Members@odata.count'	=	$Pools.count;
 					Members					=	$Members
 				  }
-	FolderAndFile $PoolFolder ("StorageServices\"+$NimbleSerial+"\StoragePools")
+	return $PoolFolder
+}
 }
 
-function Create-PoolsIndex {
-	param(	$Pool,
-			$Volumes,
-			$Disks
-	)
+function Get-SFPool {
+param(	$Poolname
+	 )
+process{
 	$DObj=@()
+	$Pool = ( Get-NSPool -name $Poolname )
+	$disks = ( Get-NSDisk )
 	foreach ($disk in $disks)
 		{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
 			$DriveObj =	@{ '@odata.id'	= 	'/redfish/v1/Chassis/'+$NimbleSerial+'/Drives/'+$localdiskname
@@ -33,21 +36,20 @@ function Create-PoolsIndex {
 		}
 	$VolsObj=@()
 	foreach ($Vol in $Pool.vol_list)
-		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Volumes/'+$Vol.Vol_name
+		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Vol.Vol_name
 						 }
 			$VolsObj+=$VolObj
 		}
-	$CapacitySources=@{		
-					  }
+	$CapacitySources=@{}
 	$PoolObj =@{'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.context'		=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/StoragePools/'+$Pool.name;
-				'@odata.id'				=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/StoragePools/'+$Pool.name;
+				'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
+				'@odata.id'				=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
 				'@odata.type'			=	'#StoragePool_1_0_0.StoragePool';
-				Id						=	$Pool.id;
-				Name					=	$Pool.name;
-				Description				=	$Pool.description;
-				Capacity				=	@{	AllocatedBytes	=	$Pool.Capacity;
-												ConsumedBytes	=	$Pool.usage	
+				Id						=	($Pool.id);
+				Name					=	($Pool.name);
+				Description				=	($Pool.description);
+				Capacity				=	@{	AllocatedBytes	=	($Pool.Capacity);
+												ConsumedBytes	=	($Pool.usage)	
 											 };
 				Status					=	@{	State			=	'Enabled';
 												Health			=	'OK';
@@ -55,19 +57,18 @@ function Create-PoolsIndex {
 											 };
 				AllocatedVolumes		=	@(	$VolsObj
 											 );
-				CapacitySources			=	@(  @{ 	ProvidedCapacity	=	@{	AllocatedCapacity	=	$Pool.Capacity;
-																				ConsumedBytes		=	$Pool.usage
+				CapacitySources			=	@(  @{ 	ProvidedCapacity	=	@{	AllocatedCapacity	=	($Pool.Capacity);
+																				ConsumedBytes		=	($Pool.usage)
 				 															 };	
 													ProvidingDrives		=	@{	Drives				=	@( $DObj )
 																			  }
 												 }
 											 );
 				Compressed				=	'true';
-				Deduplicated			=	$Pool.dedupe_capable;
+				Deduplicated			=	($Pool.dedupe_capable);
 				Encryption				=	'true'	
 				SupportedRAIDTypes		=	'RAID6TP'
-				}
-	FolderAndFile $PoolObj ("StorageServices\"+$NimbleSerial+"\StoragePools\"+$Pool.name)
+			   }
+	return $PoolObj 
 }
-
-
+}

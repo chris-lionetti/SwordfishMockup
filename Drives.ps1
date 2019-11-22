@@ -1,12 +1,13 @@
-function Create-DriveRoot {
-	param (	$disks,
-			$shelf
-		  )
+function Get-SFDriveRoot {
+param (	$ShelfName
+	  )
+process{
+	$disks = ( Get-NSDisk )
+	$Shelf = (Get-NSShelf | where {$_.serial -like $ShelfName })
 	$DrivesObj=@()
 	foreach ($disk in $disks)
 		{	if ($Shelf.serial -like $disk.shelf_serial )
-			{	Make-Folder ("Chassis\"+$Shelf.serial+"\Drives")	
-				$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
+			{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
 				$DriveObj=@{ '@odata.id'	= 	$localDiskname
 						   }
 				$DrivesObj+=$DriveObj
@@ -19,16 +20,30 @@ function Create-DriveRoot {
 				Id						= 	"Drives";
 				Name					= 	"HPENimbleDrives";
 				Drives					=	$DrivesObj;
-			 }	
-	FolderAndFile $Drives ("Chassis\"+$Shelf.serial+"\Drives")
+			 }
+	if ($Shelf) 
+		{	return $Drives
+		}
+}
 }
 	
-function create-drive {
-	param(	$disks,
-			$Shelf
-		 )		
-	foreach ($disk in $disks)
-	{	if ($Shelf.serial -like $disk.shelf_serial )
+function Get-SFdrive {
+param(	$diskname,
+		$ShelfSer
+	 )
+process{
+	$result = ""
+	$DriveObj=@{}
+	write-host "DiskName = $diskname"
+	write-host "ShelfSer = $ShelfSer"
+	$Shelf = ( Get-nsShelf | where { $_.serial -like $ShelfSer } )
+	foreach ( $rawdisk in Get-NSDisk )
+	{	$Loc = "Disk.Shelf_"+$($rawdisk.vshelf_id)+".Location_"+$($rawdisk.slot)
+		if ($diskname -like $Loc)
+		{	$disk = $rawdisk
+		}
+	}
+	if ($Shelf.serial -like $disk.shelf_serial )
 		{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
 			if ( $disk.state -eq "in use")
 				{	$LocalLED="Lit"	
@@ -62,7 +77,7 @@ function create-drive {
 							CapableSpeedGbs			=	6;
 							NegotiatedSpeedGbs		=	6
 					   }
-			FolderAndFile $DriveObj ("Chassis\"+$Shelf.serial+"\Drives\"+$localDiskname+"")
-		}		   
-	 }
+		}
+	return $DriveObj
+}
 }

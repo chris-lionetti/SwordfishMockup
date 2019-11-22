@@ -1,79 +1,112 @@
-# Create a listener on port 8000
-$listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add('http://+:5000/') 
+$username = "admin"                                             # This is the Array username
+$password = ConvertTo-SecureString "admin" -AsPlainText -Force  # This is the Array Password, change admin to YOUR password
+$ArrayIP  = '192.168.1.60'                                      # This is the Array IP Address
+##############################################################################################################################
+$psCred = New-Object System.Management.Automation.PSCredential -ArgumentList ($username, $password)
+if ( -not (get-module -name HPENimblePowerShellToolkit ) )
+    {   Write-Error "You must first download the HPENimblePowerShelLToolkit from the Microsoft PSGallery to use this software."
+        exit
+    }
+import-module HPENimblePowerShellToolkit
+if (-not (connect-nsgroup -Group $ArrayIP -Credential $psCred -IgnoreServerCertificate) 
+    {   Write-Error "You must modify this script to specify the correct IP address, username and Password to a Nimble Array"
+        exit
+    }
+$Global:NimbleSerial	    =	(Get-nsArray).serial
+$Global:RedfishCopyright    =	"Copyright 2014-2016 Distributed Management Task Force, Inc. (DMTF). For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+$Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry Association (SNIA), USA. All rights reserved. For the full SNIA copyright policy, see http://www.snia.org/about/corporate_info/copyright"
+. .\Chassis.ps1                                 # These are all of the Subroutines to return the JSON. Subdivided to make troubleshooting simpler.
+. .\Drives.ps1
+. .\Endpoints.ps1
+. .\EndpointGroups.ps1
+. .\StoragePools.ps1
+. .\StorageGroups.ps1
+. .\StorageSystems.ps1
+. .\Volumes.ps1
+. .\ConsistencyGroups.ps1
+. .\DataProtectionLoS.ps1
+$listener = New-Object System.Net.HttpListener  # Create the Listerer Object
+$listener.Prefixes.Add('http://+:5000/')        # Set the listener on port 5000
 $listener.Start()
-'Listening ...'
- 
-$Base='C:\SwordfishMockup\Redfish\v1'
-# Run until you send a GET request to /end
-while ($true) 
-{   $context = $listener.GetContext() 
-    # Capture the details about the request
-    $request = $context.Request
-    # Setup a place to deliver a response
-    $response = $context.Response
-    # Break from loop if GET request sent to /end
-    if ($request.Url -match '/end$') 
-    {   break 
-    } else 
-    {   # Split request URL to get command and options
-        $requestvars = ([String]$request.Url).split("/");        
-        if ($requestvars[3] -eq "redfish" -and $requestvars[4] -eq 'v1') 
-        {   # Get the class name and server name from the URL and run get-WMIObject
-            if ($requestvars.count -eq 5)
-            {   $result = get-content $Base'\index.json' -raw
-                $response.ContentType = 'application/json'; 
-            }
-            if ($requestvars.count -eq 6)
-            {   switch($requestvars[5])
-                {   "Managers"        {    $direct="Managers"          }
-                    "EventService"    {    $direct="EventServices"     }
-                    "Systems"         {    $direct="Systems"           }
-                    "SessionService"  {    $direct="SessionServices"   }
-                    "Chassis"         {    $direct="Chassis"           }
-                    "StorageSystems"  {    $direct="StorageSystems"    }
-                    "StorageServices" {    $direct="StorageServices"   }
-                    "TaskService"     {    $direct="TaskServicse"      }
-                    "AccountService"  {    $direct="AccountServices"   }
+Write-host 'Listening ...Go Swordfish Go.'
+$DontEndYet=$True                               # Break from loop if GET request sent to /end
+while ($DontEndYet) 
+{   $context    = $listener.GetContext()            # Capture the details about the request
+    $request    = $context.Request                  # Setup a place to deliver a response
+    $response   = $context.Response                 # Set up my object to allow me to respond
+    $PageMissing=$False                             # Used if you request a page that doesnt exist. 
+    $Result     = ''                                # The result should be blank until I explicity set it.
+    if ($request.Url -match '/end$')                # This is the escape clause that lets you shut down the responder. 
+        {   $DontEndYet=$False                      #   simply send a request to http://localhost:5000/end
+        } 
+    $rvar = ([String]$request.Url).split("/")       # Split request URL to get command and options. RVAR = Request Variables
+    if ( -not ( $rvar[3] -eq "redfish" -and $rvar[4] -eq 'v1' ) ) 
+        {   $PageMissing=$True                      # The 3rd and 4th split of the request SHOULD be redfish and V1, otherwise throw an error
+        }   
+    switch ($rvar.count)                            # The number of parts of the request denotes how complex a request it is.
+      { 5 { $result = Get-SFRedfishRoot | ConvertTo-JSON -Depth 10      # Return the Redfish root, i.e. the request was HTTP://localhost:5000/redfish/v1 
+          }
+        6 { switch($rvar[5])                        # The Request has start Redfish/v1, but then must contain the following as the last element of the request
+              { "Chassis"         { $result = Get-SFChassisRoot                          | ConvertTo-JSON -Depth 10  }
+                "StorageSystems"  { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  }
+              }
+          }
+        7 { switch($rvar[5])                         # The request will look something like HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#
+              { "Chassis"         { $Result = Get-SFChassis -ShelfName ($rvar[6])        | ConvertTo-JSON -Depth 10  }
+                "StorageSystems"  { $Result = Get-SFStorageSystem -ArrayName ($rvar[6])  | ConvertTo-JSON -Depth 10  }
+              }
+          }
+        8 { switch($rvar[5])                        # THis reqest will add a subquery under the individual serial name listed in the above request
+              { "Chassis"         { switch($rvar[7])# And example of this would be HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#/Volumes    
+                                      { "Power"     {  $result = Get-SFChassisPower -ShelfName ($rvar[6])    | ConvertTo-JSON -Depth 10 }
+                                        "Thermal"   {  $result = Get-SFChassisThermal -ShelfName ($rvar[6])  | ConvertTo-JSON -Depth 10 }
+                                        "Drives"    {  $result = Get-SFDriveRoot -ShelfName ($rvar[6])       | ConvertTo-JSON -Depth 10 }
+                                      }
+                                  }
+                  "StorageSystems"{ if ( (Get-NSArray).serial -like $rvar[6] )
+                                      { switch($rvar[7])
+                                          { "Endpoints"                     { $result = Get-SFEndpointRoot            | ConvertTo-JSON -Depth 10 }
+                                            "EndpointGroups"                { $result = Get-SFEndpointGroupRoot       | ConvertTo-JSON -Depth 10 }
+                                            "Volumes"                       { $result = Get-SFVolumeRoot              | ConvertTo-JSON -Depth 10 }
+                                            "StorageGroups"                 { $result = Get-SFStorageGroupRoot        | ConvertTo-JSON -Depth 10 }
+                                            "StoragePools"                  { $result = Get-SFPoolRoot                | ConvertTo-JSON -Depth 10 }
+                                            "ConsistencyGroups"             { $result = Get-SFConsistencyGroupRoot    | ConvertTo-JSON -Depth 10 } 
+                                            "DataProtectionLineOfService"   { $result = Get-SFDataProtectionLoSRoot   | ConvertTo-JSON -Depth 10 }                   
+                                            } 
+                                        }
+                                    }
                 }
-                $result = get-content $Base'\'$direct'\index.json' -raw
-                $response.ContentType = 'application/json'; 
             }
-            if ($requestvars.count -eq 7)
-            {   switch($requestvars[5])
-                {   "Managers"        {    $direct="Managers"          }
-                    "EventService"    {    $direct="EventServices"     }
-                    "Systems"         {    $direct="Systems"           }
-                    "SessionService"  {    $direct="SessionServices"   }
-                    "Chassis"         {    $direct="Chassis"           }
-                    "StorageSystems"  {    $direct="StorageSystems"    }
-                    "StorageServices" {    $direct="StorageServices"   }
-                    "TaskService"     {    $direct="TaskServicse"      }
-                    "AccountService"  {    $direct="AccountServices"   }
+          9 { switch($rvar[5])                      # This reqest will add a subquery under the individual serial name listed in the above request
+                { "Chassis"         { switch($rvar[7])
+                                        { "Drives"                   { $result = Get-SFDrive -shelfser ($rvar[6]) -diskname ($rvar[8]) | ConvertTo-JSON -Depth 10     }
+                                        }       
+                                    }               # And example of this would be HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#/Volumes/VolumeID
+                  "StorageSystems"  { switch($rvar[7])
+                                        { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
+                                          "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
+                                          "Volumes"                     { $result = Get-SFVolume -Volumename ($rvar[8])                | ConvertTo-JSON -Depth 10     }
+                                          "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
+                                          "StoragePools"                { $result = Get-SFPool -Poolname ($rvar[8])                    | ConvertTo-JSON -Depth 10     } 
+                                          "ConsistencyGroups"           { $result = Get-SFConsistencyGroup -VolColname ($rvar[8])      | ConvertTo-JSON -Depth 10     }  
+                                          "DataProtectionLineOfService" { $result = Get-SFDataProtectionLoS -PSid ($rvar[8])           | ConvertTo-JSON -Depth 10     }                   
+                                        } 
+                                    }
                 }
-                $Serial=$requestvars[6]
-                #$result = get-content 'C:\SwordfishMockup\Redfish\v1\Chassis\AC-109032\index.json' -raw
-                $result = get-content $Base'\'$direct'\'$Serial'\index.json' -raw
-                $response.ContentType = 'application/json';  
-            }
-            $message = $result      
+            } 
+      }
+    ############################ END Runs ###################################
+    if ( $PageMissing -or ( -not $result ) )
+        {   $message = "All requests should be made to http://localhost:5000/redfish/v1" # If no matching subdirectory/route is found generate a 404 message
+            $response.ContentType = 'text/html'
         } else 
-        {   # If no matching subdirectory/route is found generate a 404 message
-            $message = "All requests should be made to http://localhost:5000/redfish/v1";
-            $response.ContentType = 'text/html' ;
-       }
-       # Convert the data to UTF8 bytes
-       [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($message)
-       
-       # Set length of response
-       $response.ContentLength64 = $buffer.length
-       
-       # Write response out and close
-       $output = $response.OutputStream
-       $output.Write($buffer, 0, $buffer.length)
-       $output.Close()
-   }    
-}
- 
-#Terminate the listener
-$listener.Stop()
+        {   $message = $result
+            $response.ContentType = 'application/json'             
+        }
+    [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($message)   # Convert the data to UTF8 bytes 
+    $response.ContentLength64 = $buffer.length                          # Set length of response
+    $output = $response.OutputStream                                    # Write response out and close
+    $output.Write($buffer, 0, $buffer.length)
+    $output.Close()
+}    
+$listener.Stop()                                                         # Assuming someone sent the END command, closing listener

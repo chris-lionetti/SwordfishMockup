@@ -1,63 +1,67 @@
-function Create-ChassisRoot {
-	param(	$Shelfs
+function Get-SFChassisRoot {
+	param(	
 		 )
 
 	$Members=@{}
+	$Shelfs = (Get-NSShelf)
 	foreach ($Shelf in $Shelfs)
-		{	$Members += @{ '@odata.id' = "/redfish/v1/Chassis/"+$Shelf.Serial }
-			FolderAndFile -FolderNames ("Chassis\"+$Shelf.Serial)
+		{	$Members += @{ '@odata.id' = "/redfish/v1/Chassis/"+($Shelf.Serial) }
 		}
 	$Chassis=@{	'@Redfish.Copyright' 	= 	$RedfishCopyright;
 				'@odata.type'			=	"#ChassisCollection.ChassisCollection";
 				name					=	"Chassis Collection";
 				Members		 			=	$Members ;
-				'Members@odata.count' 	= 	$Shelfs.count ;
+				'Members@odata.count' 	= 	($Shelfs.count) ;
 				'@odata.context'		= 	'/redfish/v1/$metadata#ChassisCollection';
 				'@odata.id'				=	'/redfish/v1/Chassis'
 			  }
-	FolderAndFile $Chassis ("Chassis")
+	return $Chassis	
 }
 
-function Create-Chassis {
-	param(	$Shelf
-			)
-	process
-	{	if ( ($shelf.psu_overall_status -like "OK") -and ($shelf.fan_overall_status -like "OK") -and ($shelf.temp_overall_status -like "OK") )
-			{ 	$NimbleShelfLED="OK" 	} else 
-			{	$NimbleShelfLED="Fault"	}
-		$DriveObj=@{}
-		$DriveArray=@{}
-		$ShelfObj=@{	"@Redfish.Copyright" 	= $RedfishCopyright;
-						"@odata.context" 		= '/redfish/v1/$metadata#Chassis/Members/$entity';
-						"@odata.id"				= "/redfish/v1/Chassis/"+$Shelf.serial;
-						"@odata.type"			= "#Chassis.1.0.0.Chassis";
-						Id						= $Shelf.id;
-						Name					= $Shelf.serial;
-						ChassisType				= $Shelf.chassis_type;
-						Manufacturer			= "HPE-Nimble";
-						Model					= $Shelf.model;
-						SKU						= $Shelf.model_ext;
-						SerialNumber			= $Shelf.serial;
-						PartNumber				= $Shelf.model_ext;
-						IndicatorLED			= $NimbleShelfLED;
-						Status					= @{	State 				= "Enabled";
-														Health				= $NimbleShelfLED	
-												   };
-						Thermal					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+$Shelf.serial+"/Thermal"	
-												   };
-						Power					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+$Shelf.serial+"/Power"	
-												   };
-						Drives					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+$Shelf.Serial+"/Drives"
-												   };
-						Links					= @{	'StorageSystems'	= "/redfish/v1/StorageSystem/"+$Array.serial}
-				    }							   		
-		FolderAndFile -FolderNames ("Chassis\"+$Shelf.serial+"\Drives")
-		FolderAndFile $ShelfObj ("Chassis\"+$Shelf.serial)
-}   }
+function Get-SFChassis {
+param(	$ShelfName
+	 )
+process
+{	$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
+	if ( ($shelf.psu_overall_status -like "OK") -and ($shelf.fan_overall_status -like "OK") -and ($shelf.temp_overall_status -like "OK") )
+		{ 	$NimbleShelfLED="OK" 	} else 
+		{	$NimbleShelfLED="Fault"	}
+	$ShelfObj=@{	"@Redfish.Copyright" 	= $RedfishCopyright;
+					"@odata.context" 		= '/redfish/v1/$metadata#Chassis/Members/$entity';
+					"@odata.id"				= "/redfish/v1/Chassis/"+($Shelf.serial);
+					"@odata.type"			= "#Chassis.1.0.0.Chassis";
+					Id						= ($Shelf.id);
+					Name					= ($Shelf.serial);
+					ChassisType				= ($Shelf.chassis_type);
+					Manufacturer			= "HPE-Nimble";
+					Model					= ($Shelf.model);
+					SKU						= ($Shelf.model_ext);
+					SerialNumber			= ($Shelf.serial);
+					PartNumber				= ($Shelf.model_ext);
+					IndicatorLED			= $NimbleShelfLED;
+					Status					= @{	State 				= "Enabled";
+													Health				= $NimbleShelfLED	
+											   };
+					Thermal					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+($Shelf.serial)+"/Thermal"	
+											   };
+					Power					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+($Shelf.serial)+"/Power"	
+											   };
+					Drives					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+($Shelf.Serial)+"/Drives"
+											   };
+					Links					= @{	'StorageSystems'	= "/redfish/v1/StorageSystem/"+($Array.serial) }
+				}	
+	if ($Shelf)
+		{	return $ShelfObj
+		}
+}
+}
 
-function CreateChassisFolderPower {
-	param(	$Shelf
-		 )
+function Get-SFChassisPower {
+param(	$Shelfname
+	 )
+process{
+	$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
+	$NimbleShelfPowerStatus = $Shelf.psu_overall_status
 	if ($NimbleShelfPowerStatus -like 'ok') 
 		{	$NimbleShelfEnabled = "Enabled" } 
 		else 
@@ -69,12 +73,12 @@ function CreateChassisFolderPower {
 				{ $LocalState="Enabled" } 
 				else 
 				{ $LocalState="Faulted" }
-			$PowerSupply= @{	'@odata.id'			=	"/redfish/v1/Chassis/"+$Shelf.serial+"/Power/PowerSupplies/"+$PSCount;
+			$PowerSupply= @{	'@odata.id'			=	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power/PowerSupplies/"+$PSCount;
 								'@Redfish.Copyright'= 	$RedfishCopyright;
 								'@odata.context'	=	'/redfish/v1/$metadata#Power.Power';
 								MemberID			= 	$PSCount;
 								Status				= 	@{		State	= $LocalState;
-																Health	= $PS.Status
+																Health	= ($PS.Status)
 											 	 	 	 };
 								Manufacturer		= 	"HPE-Nimble"
 						   }
@@ -84,10 +88,10 @@ function CreateChassisFolderPower {
 	$PowerObj=@{	'@odata.type'			= 	"#Power.v1_1_0.Power";
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		= 	'/redfish/v1/$metadata#Power.Power';
-					'@odata.id'				= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Power";
-					Id						= 	$Shelf.ID;
+					'@odata.id'				= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power";
+					Id						= 	($Shelf.ID);
 					Name					= 	"NimbleShelfPower";
-					PowerControl			= 	@{	'@odata.id'	= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Power#/PowerControl/0";
+					PowerControl			= 	@{	'@odata.id'	= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power#/PowerControl/0";
 													MemberID	= 	0;
 													Status 		= 	@{	State	=	$NimbleShelfEnabled;
 																		Health	=	$NimbleShelfPowerStatus
@@ -95,30 +99,34 @@ function CreateChassisFolderPower {
 									   		     };
 					PowerSupplies			= 	$PowerSupplyObj
 			   }
-	FolderAndFile $PowerObj ("Chassis\"+$Shelf.serial+"\Power")
+	if ($Shelf)
+		{	return $PowerObj
+		}
+}
 }
 
-function CreateChassisFolderThermal {
-	param(	$Shelf
+function Get-SFChassisThermal {
+	param(	$ShelfName
 		 )
 	$TempsObj=@()
 	$FansObj=@()
 	$TmemberID=0
 	$FmemberID=1
+	$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
 	foreach ($ctrlrs in $Shelf.ctrlrs )
 	{	foreach ($sensor in $ctrlrs.ctrlr_sensors)
 		{	if ( $sensor.type -like "temperature" )
 			{	if ( $sensor.status -eq 'OK' ) 
 					{	$LocalState="Enabled"	} else
 					{	$LocalState="Disabled"	}
-				$TempObj=	@{	'@odata.id'		=	"/redfish/v1/Chassis/"+$Shelf.Serial+"/Thermal#/Temperatures/"+$TMemberID;
+				$TempObj=	@{	'@odata.id'		=	"/redfish/v1/Chassis/"+($Shelf.Serial)+"/Thermal#/Temperatures/"+$TMemberID;
 								MemberId		=	$TMemberID;
-								Name			=	$Sensor.name
+								Name			=	($Sensor.name)
 								Status			=	@{	State	=	$LocalState;
-														Health	=	$Sensor.Status
+														Health	=	($Sensor.Status)
 												 	 };
-								ReadingCelsius	=	$Sensor.value;
-								PhysicalContext	=	"ChassisSocket"+$Sensor.cid+"_"+$Sensor.Location
+								ReadingCelsius	=	($Sensor.value);
+								PhysicalContext	=	"ChassisSocket"+($Sensor.cid)+"_"+($Sensor.Location)
 							 }
 				$TMemberID+=1
 				$TempsObj+=$TempObj
@@ -127,14 +135,14 @@ function CreateChassisFolderThermal {
 			{	if ( $sensor.status -eq 'OK' ) 
 					{	$LocalState="Enabled"	} else
 					{	$LocalState="Disabled"	}
-				$FanObj=	@{	'@odata.id'		=	"/redfish/v1/Chassis/"+$Shelf.serial+"/Thermal#/Fans/$FMemberID"
+				$FanObj=	@{	'@odata.id'		=	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Thermal#/Fans/$FMemberID"
 								MemberId		=	$FMemberID
-								Name			=	$Sensor.name
+								Name			=	($Sensor.name)
 								Status			=	@{	State	=	$LocalState;
-														Health	=	$Sensor.Status
+														Health	=	($Sensor.Status)
 												 	 };
-								ReadingCelsius	=	$Sensor.value;
-								PhysicalContext	=	"ChassisSocket"+$Sensor.cid+"_"+$Sensor.Location
+								ReadingCelsius	=	($Sensor.value);
+								PhysicalContext	=	"ChassisSocket"+($Sensor.cid)+"_"+($Sensor.Location)
 							 }
 				$FansObj+=$FanObj
 				$FMemberID+=1
@@ -143,12 +151,14 @@ function CreateChassisFolderThermal {
 	}
 	$ThermalObj=@{	'@odata.type'			= 	"#Thermal.1.0.0.Thermal";
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		= 	'/redfish/v1/$metadata#Chassis/Members/'+$Shelf.serial+'/Thermal';
-					'@odata.id'				= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Thermal";
+					'@odata.context'		= 	'/redfish/v1/$metadata#Chassis/Members/'+($Shelf.serial)+'/Thermal';
+					'@odata.id'				= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Thermal";
 					Id						= 	"Thermal";
 					Name					= 	"NimbleShelfThermal";
 					Temperatures			=	$TempsObj;
 					Fans					=	$FansObj
 				 }
-	FolderAndFile $ThermalObj ("Chassis\"+$Shelf.serial+"\Thermal")
+	if ($Shelf)
+		{ Return $ThermalObj
+		}
 }

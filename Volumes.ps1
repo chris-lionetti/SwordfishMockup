@@ -1,34 +1,36 @@
 
-function Create-VolumeFolderRoot {	
-	param( 	$Volumes	
-		 )
+function Get-SFVolumeRoot {	
+param( 		
+	 )
+process{
 	$Members=@()
-	foreach ($Volume in $Volumes)
-		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+	foreach ( $Volume in (Get-NSVolume) )
+		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
 							 }
 			$Members+=$localMembers
 		}
 	$VolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes';
-					'@odata.id'				=	'/redfish/v1//StorageServices/'+$NimbleSerial+'/Volumes';
+					'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
 					'@odata.type'			=	'#VolumesCollection_1_4_0.VolumesCollection';
 					Name					=	'NimbleVolumeCollection';
 					'Members@odata.count'	=	$Volumes.count;
 					Members					=	$Members
 				  }
-	FolderAndFile $VolFolder ("StorageServices\"+$NimbleSerial+"\Volumes")
+	return $VolFolder
+}
 }
 
-function Create-VolumesIndex {
-	param(	$Pools,	
-			$Volume
-		 )
+function Get-SFVolume {
+param(	$VolumeName
+	 )
+process{
 	$ProvidingPools=@()
-	foreach ($pool in $pools)
-	{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StoragePools/'+$pool.name 
-						 }
-		$ProvidingPools+=$localMembers
-	}
+	$Volume = Get-NsVolume -name $VolumeName
+	$pool = $Volume.pool_name
+	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+$pool 
+					 }
+	$ProvidingPools+=$localMembers
 	if ( $Volume.online)
 		{	$VolStatus_state = 'Enabled'
 			$VolStatus_Health= 'OK'
@@ -107,14 +109,15 @@ function Create-VolumesIndex {
 												 };
 											 )				
 				}
-	FolderAndFile $VolObj ("StorageServices\"+$NimbleSerial+"\Volumes\"+$Volume.name)
+	Return $VolObj
+}
 }
 
 function Create-VolumesSnapshotIndex {
 	param(	$Volume,
 			$Snapshot
 		 )
-	$ProvidingVol = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+	$ProvidingVol = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
 					 }
 	if ( $Volume.Encryption_cipher -like 'none')
 		{	$Vol_Encryption = 'false'
@@ -189,5 +192,5 @@ function Create-VolumesSnapshotIndex {
 														 };
 													 )				
 					}
-			FolderAndFile $VolObj ("StorageServices\"+$NimbleSerial+"\Volumes\"+$Snapshot.name)
+			return $VolObj
 }
