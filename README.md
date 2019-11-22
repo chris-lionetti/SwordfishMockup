@@ -1,4 +1,6 @@
-# Catfish:
+
+# How to Use
+From a Windows Machine, download using the PSGallery the HPENimblePowerShellToolkit, Then download this package and place it anywhere.  Modify the 'Listener.ps1' script with your Nimble Array IP Address, username, and passowrd. Open a PowerShell window (Administrator window) and execute the script called 'Listener.ps1'. Leave this PowerShell window alone and open a webbrowser (CHROME) to the address HTTP://localhost:5000/redfish/v1 and you should see the basic folder to start exploring Swordfish. Any errors should appear in the PowerShell window. To cease using the software open a web browser to the following location HTTP://Localhost:5000/end and the powershell code will terminate.# Catfish:
   *  A simple, minimal Redfish/Swordfish Service responder.
 
 # Top Level Description:
