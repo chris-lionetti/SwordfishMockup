@@ -40,7 +40,7 @@ Param(	[int]$UnixDate
 process{
 	$WTime=[timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($UnixDate))
 	$OutYear	= [string]$WTime.year
-	$Outmonth 	= (Add-LeadingZero -input ( $WTime.month	) )
+	$Outmonth 	= Add-LeadingZero -input ( $WTime.month	) 
 	$Outday 	= Add-LeadingZero -input ( $WTime.day	)
 	$OutHour 	= Add-LeadingZero -input ( $WTime.hour	)
 	$OutMinute 	= Add-LeadingZero -input ( $WTime.minute )

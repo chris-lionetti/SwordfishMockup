@@ -1,14 +1,22 @@
-$username = "admin"                                             # This is the Array username
-$password = ConvertTo-SecureString "admin" -AsPlainText -Force  # This is the Array Password, change admin to YOUR password
-$ArrayIP  = '192.168.1.60'                                      # This is the Array IP Address
+$username = "admin"                                             
+                                                                # This is the Array username
+$password = ConvertTo-SecureString "admin" -AsPlainText -Force  
+                                                                # This is the Array Password, change admin to YOUR password
+$ArrayIP  = '192.168.1.60'                                      
+                                                                # This is the Array IP Address
 ##############################################################################################################################
-$psCred = New-Object System.Management.Automation.PSCredential -ArgumentList ($username, $password)
-if ( -not (get-module -name HPENimblePowerShellToolkit ) )
+$psCred = ( New-Object System.Management.Automation.PSCredential($username, $password) )
+if ( -not (get-module -ListAvailable -name HPENimblePowerShellToolkit ) )
     {   Write-Error "You must first download the HPENimblePowerShelLToolkit from the Microsoft PSGallery to use this software."
         exit
     }
-import-module HPENimblePowerShellToolkit
-if (-not (connect-nsgroup -Group $ArrayIP -Credential $psCred -IgnoreServerCertificate) 
+import-module -name HPENimblePowerShellToolkit
+connect-nsgroup -Group "$ArrayIP" -Credential $psCred -IgnoreServerCertificate
+
+if ( get-nsarray )
+    {   Write-warning "Connected to Array"
+    }
+    else 
     {   Write-Error "You must modify this script to specify the correct IP address, username and Password to a Nimble Array"
         exit
     }
@@ -25,11 +33,11 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\Volumes.ps1
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
-$listener = New-Object System.Net.HttpListener  # Create the Listerer Object
-$listener.Prefixes.Add('http://+:5000/')        # Set the listener on port 5000
+$listener = New-Object System.Net.HttpListener      # Create the Listerer Object
+$listener.Prefixes.Add('http://+:5000/')            # Set the listener on port 5000
 $listener.Start()
 Write-host 'Listening ...Go Swordfish Go.'
-$DontEndYet=$True                               # Break from loop if GET request sent to /end
+$DontEndYet=$True                                   # Break from loop if GET request sent to /end
 while ($DontEndYet) 
 {   $context    = $listener.GetContext()            # Capture the details about the request
     $request    = $context.Request                  # Setup a place to deliver a response
@@ -85,7 +93,7 @@ while ($DontEndYet)
                   "StorageSystems"  { switch($rvar[7])
                                         { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
                                           "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
-                                          "Volumes"                     { $result = Get-SFVolume -Volumename ($rvar[8])                | ConvertTo-JSON -Depth 10     }
+                                          "Volumes"                     { $result = Get-SFVolumeOrSnap -VolumeOrSnapName ($rvar[8])                | ConvertTo-JSON -Depth 10     }
                                           "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
                                           "StoragePools"                { $result = Get-SFPool -Poolname ($rvar[8])                    | ConvertTo-JSON -Depth 10     } 
                                           "ConsistencyGroups"           { $result = Get-SFConsistencyGroup -VolColname ($rvar[8])      | ConvertTo-JSON -Depth 10     }  

@@ -35,10 +35,16 @@ process{
 			$DObj+=$DriveObj
 		}
 	$VolsObj=@()
-	foreach ($Vol in $Pool.vol_list)
-		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Vol.Vol_name
+	foreach ( $Vol in ($Pool.vol_list) )
+		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Vol.name
 						 }
 			$VolsObj+=$VolObj
+			$Snaps = Get-NSSnapShot -vol_id ($Vol.id)
+			foreach ( $Snap in $Snaps )
+				{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Snap.name
+							 	 } 
+					$VolsObj+=$VolObj
+				}
 		}
 	$CapacitySources=@{}
 	$PoolObj =@{'@Redfish.Copyright'	= 	$RedfishCopyright;

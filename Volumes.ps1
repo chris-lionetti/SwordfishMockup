@@ -3,24 +3,51 @@ function Get-SFVolumeRoot {
 param( 		
 	 )
 process{
+	$VolCount=0
 	$Members=@()
 	foreach ( $Volume in (Get-NSVolume) )
 		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
 							 }
+			$VolCount=$VolCount+1
 			$Members+=$localMembers
+			# Now lets get all of the Snapshots
+			foreach( $Snapshot in (Get-NSSnapshot -vol_id $Volume.id ) )
+				{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Snapshot.name 
+									 }
+					$Members+=$localMembers
+					$VolCount=$VolCount+1
+				}
 		}
 	$VolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes';
 					'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
 					'@odata.type'			=	'#VolumesCollection_1_4_0.VolumesCollection';
 					Name					=	'NimbleVolumeCollection';
-					'Members@odata.count'	=	$Volumes.count;
+					'Members@odata.count'	=	$VolCount;
 					Members					=	$Members
 				  }
 	return $VolFolder
 }
 }
 
+function Get-SFVolumeOrSnap{
+param(	$VolumeOrSnapName
+	 )
+process{
+	$found=$false
+	if ( Get-NSVolume -name ($VolumeOrSnapName) )
+	{	$VolFound=$True
+		Return (Get-SFVolume -VolumeName $VolumeOrSnapName)
+	} else 
+	{	ForEach ($Volume in (Get-NSVolume) )
+			{	if ( Get-NSSnapshot -$VolID ($Volume.id) -name $VolumeOrSnapName)
+					{	$VolFound=$True
+						Return (Get-SFSnapShot -$VolID ($Volume.id) -name $VolumeOrSnapname) 
+					} 
+			}
+	}
+}
+}
 function Get-SFVolume {
 param(	$VolumeName
 	 )
@@ -109,14 +136,18 @@ process{
 												 };
 											 )				
 				}
-	Return $VolObj
+	if ($Volume) 
+		{	Return $VolObj
+		}
 }
 }
 
-function Create-VolumesSnapshotIndex {
-	param(	$Volume,
-			$Snapshot
-		 )
+function Get-SFSnapshot {
+param(	$VolID,
+		$Name
+	 )
+process{
+	 $Volume = Get-NSVolume -volid $volid
 	$ProvidingVol = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
 					 }
 	if ( $Volume.Encryption_cipher -like 'none')
@@ -129,7 +160,7 @@ function Create-VolumesSnapshotIndex {
 		} else 	
 		{	$Vol_CachePolicy = 'off'
 		}
-	$Snap=$Snapshot
+	$Snap = ( Get-NSSnapshot -volid $VolID -name $Name )
 	if ( $Snapshot.online)
 		{	$SnapStatus_state = 'Enabled'
 			$SnapStatus_Health= 'OK'
@@ -193,4 +224,5 @@ function Create-VolumesSnapshotIndex {
 													 )				
 					}
 			return $VolObj
+}
 }
