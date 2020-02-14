@@ -30,6 +30,8 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\StoragePools.ps1
 . .\StorageGroups.ps1
 . .\StorageSystems.ps1
+. .\AccountService.ps1
+. .\Systems.ps1
 . .\Volumes.ps1
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
@@ -57,11 +59,18 @@ while ($DontEndYet)
         6 { switch($rvar[5])                        # The Request has start Redfish/v1, but then must contain the following as the last element of the request
               { "Chassis"         { $result = Get-SFChassisRoot                          | ConvertTo-JSON -Depth 10  }
                 "StorageSystems"  { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  }
+                "Systems"         { $result = Get-SFSystemRoot                           | ConvertTo-JSON -Depth 10  } 
+                "AccountService"  { $result = Get-SFAccountServiceRoot                   | ConvertTo-JSON -Depth 10  }
               }
           }
         7 { switch($rvar[5])                         # The request will look something like HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#
-              { "Chassis"         { $Result = Get-SFChassis -ShelfName ($rvar[6])        | ConvertTo-JSON -Depth 10  }
-                "StorageSystems"  { $Result = Get-SFStorageSystem -ArrayName ($rvar[6])  | ConvertTo-JSON -Depth 10  }
+              { "Chassis"         { $Result = Get-SFChassis -ShelfName ($rvar[6])               | ConvertTo-JSON -Depth 10  }
+                "StorageSystems"  { $Result = Get-SFStorageSystem -ArrayName ($rvar[6])         | ConvertTo-JSON -Depth 10  }
+                "AccountService"  { switch($rvar[6]) # And example of this would be HTTP://localhost:5000/redfish/v1/AccountService/Roles
+                                        {   "Roles"     { $result = Get-SFAccountRoleCol        | ConvertTo-JSON -Depth 10  } 
+                                            "Accounts"  { $result = Get-SFAccountCol            | ConvertTo-JSON -Depth 10  }
+                                        } 
+                                  }  
               }
           }
         8 { switch($rvar[5])                        # THis reqest will add a subquery under the individual serial name listed in the above request
@@ -71,7 +80,12 @@ while ($DontEndYet)
                                         "Drives"    {  $result = Get-SFDriveRoot -ShelfName ($rvar[6])       | ConvertTo-JSON -Depth 10 }
                                       }
                                   }
-                  "StorageSystems"{ if ( (Get-NSArray).serial -like $rvar[6] )
+                "AccountService"  { switch($rvar[6])# And example of this would be HTTP://localhost:5000/redfish/v1/AccountService/Roles/Guest
+                                      { "Roles"     { $result = Get-SFAccountRole -RoleName ($rvar[7])       | ConvertTo-JSON -depth 10 }
+                                        "Accounts"  { $result = Get-SFAccount  -AccountName ($rvar[7])       | ConvertTo-JSON -depth 10 }
+                                      }
+                                  }
+                "StorageSystems"{ if ( (Get-NSArray).serial -like $rvar[6] )
                                       { switch($rvar[7])
                                           { "Endpoints"                     { $result = Get-SFEndpointRoot            | ConvertTo-JSON -Depth 10 }
                                             "EndpointGroups"                { $result = Get-SFEndpointGroupRoot       | ConvertTo-JSON -Depth 10 }
@@ -80,12 +94,12 @@ while ($DontEndYet)
                                             "StoragePools"                  { $result = Get-SFPoolRoot                | ConvertTo-JSON -Depth 10 }
                                             "ConsistencyGroups"             { $result = Get-SFConsistencyGroupRoot    | ConvertTo-JSON -Depth 10 } 
                                             "DataProtectionLineOfService"   { $result = Get-SFDataProtectionLoSRoot   | ConvertTo-JSON -Depth 10 }                   
-                                            } 
-                                        }
-                                    }
-                }
-            }
-          9 { switch($rvar[5])                      # This reqest will add a subquery under the individual serial name listed in the above request
+                                          } 
+                                      }
+                                }
+              }
+          }
+        9 { switch($rvar[5])                      # This reqest will add a subquery under the individual serial name listed in the above request
                 { "Chassis"         { switch($rvar[7])
                                         { "Drives"                   { $result = Get-SFDrive -shelfser ($rvar[6]) -diskname ($rvar[8]) | ConvertTo-JSON -Depth 10     }
                                         }       
