@@ -35,6 +35,7 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\Volumes.ps1
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
+. .\EventService.ps1
 $listener = New-Object System.Net.HttpListener      # Create the Listerer Object
 $listener.Prefixes.Add('http://+:5000/')            # Set the listener on port 5000
 $listener.Start()
@@ -61,6 +62,7 @@ while ($DontEndYet)
                 "StorageSystems"  { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  }
                 "Systems"         { $result = Get-SFSystemRoot                           | ConvertTo-JSON -Depth 10  } 
                 "AccountService"  { $result = Get-SFAccountServiceRoot                   | ConvertTo-JSON -Depth 10  }
+                "EventService"    { $result = Get-SFEventServiceRoot                     | ConvertTo-JSON -Depth 10  }
               }
           }
         7 { switch($rvar[5])                         # The request will look something like HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#
@@ -71,6 +73,10 @@ while ($DontEndYet)
                                             "Accounts"  { $result = Get-SFAccountCol            | ConvertTo-JSON -Depth 10  }
                                         } 
                                   }  
+                "EventService"    { switch($rvar[6]) # example https://localhost:5000/redfish/v1/EventService/Events
+                                        {   "Events"    { $result = Get-SFEventCol              | ConvertTo-JSON -depth 10  }
+                                        }
+                                  }
               }
           }
         8 { switch($rvar[5])                        # THis reqest will add a subquery under the individual serial name listed in the above request
@@ -83,6 +89,10 @@ while ($DontEndYet)
                 "AccountService"  { switch($rvar[6])# And example of this would be HTTP://localhost:5000/redfish/v1/AccountService/Roles/Guest
                                       { "Roles"     { $result = Get-SFAccountRole -RoleName ($rvar[7])       | ConvertTo-JSON -depth 10 }
                                         "Accounts"  { $result = Get-SFAccount  -AccountName ($rvar[7])       | ConvertTo-JSON -depth 10 }
+                                      }
+                                  }
+                "EventService"    { switch($rvar[6]) # i.e. https://localhost:5000/redfish/v1/EventService/Events/1234
+                                      { "Events"    { $result = Get-SFEvent -EventId ($rvar[7])              | ConvertTo-JSON -depth 10 }
                                       }
                                   }
                 "StorageSystems"{ if ( (Get-NSArray).serial -like $rvar[6] )

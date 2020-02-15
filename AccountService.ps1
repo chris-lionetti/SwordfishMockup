@@ -2,7 +2,7 @@ function Get-SFAccountServiceRoot {
     param()
     process{
         $AccountRoot =@{'@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#AccountService';
+                        '@odata.context'		=	'/redfish/v1/$metadata#AccountService.AccountService';
                         '@odata.id'				=	'/redfish/v1/AccountService';
                         '@odata.type'			=	'#AccountService.AccountService';
                         Name					=   'Account Service';

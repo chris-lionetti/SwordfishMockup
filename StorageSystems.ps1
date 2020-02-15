@@ -9,6 +9,8 @@ function Get-SFRedfishRoot {
 						Chassis				=	@{	'@odata.id'	=	'/redfish/v1/Chassis'			};
 						Systems				= 	@{  '@odata.id'	=	'/redfish/v1/Systems'			};		
 						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/StorageSystems'	};
+						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
+						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		}
 					}
 	Return $ServicesRoot
 }
