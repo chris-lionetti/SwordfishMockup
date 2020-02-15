@@ -11,12 +11,11 @@ The command is broken into subcommands that are stored in difference files to ma
 --Provides basic management features aligned with Swordfish Management Spec 1.10:
 
 # What it does NOT have -- that the Swordfish 1.10 model supports
-   * No support for Class of Service
-   * No Support for Events (yet)
+   * No support for Class of Service (Since this is non-service based Swordfish I likely wont)
    * No Support for Replication (yet)
 
 # Outstanding bugs.
-  * If the request has a trailing '/' then the result doesnt exist, i.e. Http://localhost:5000/redfish/v1/StorageSystem works but Http://localhost:5000/redfish/v1/StorageSystem/ wont return.
+None that I know of, but beware as this implementation IS case sensitive
 
 # Why the project name CatFish?
 Well, it needed to be tied to RedFish, Swordfish, *fish scheme. It also needed to represent a PowerShell module gathering real information from an actual Array, and re-representing that data in a Swordfish compatible way back to clients looking for actual Swordfish implementations. This kind of sounds like the internet dating phenomenon called 'catfishing'.
