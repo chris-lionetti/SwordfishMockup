@@ -33,6 +33,7 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\AccountService.ps1
 . .\Systems.ps1
 . .\Volumes.ps1
+. .\Snapshots.ps1
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
 . .\EventService.ps1
@@ -117,7 +118,7 @@ while ($DontEndYet)
                   "StorageSystems"  { switch($rvar[7])
                                         { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
                                           "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
-                                          "Volumes"                     { $result = Get-SFVolumeOrSnap -VolumeOrSnapName ($rvar[8])                | ConvertTo-JSON -Depth 10     }
+                                          "Volumes"                     { $result = Get-SFVolumeOrSnap -VolumeOrSnapName ($rvar[8])    | ConvertTo-JSON -Depth 10     }
                                           "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
                                           "StoragePools"                { $result = Get-SFPool -Poolname ($rvar[8])                    | ConvertTo-JSON -Depth 10     } 
                                           "ConsistencyGroups"           { $result = Get-SFConsistencyGroup -VolColname ($rvar[8])      | ConvertTo-JSON -Depth 10     }  
@@ -125,7 +126,27 @@ while ($DontEndYet)
                                         } 
                                     }
                 }
-            } 
+            }
+        10{ switch($rvar[5])
+              { "StorageSystems"  { switch($rvar[7])
+                                    { "Volumes"     { switch($rvar[9])
+                                                        { "Snapshots"   { $result = Get-SFSnapshotIndex -VolName ($rvar[8])            | ConvertTo-JSON -depth 10      }
+                                                        }
+                                                    }
+                                    }
+                                  }
+              }    
+          }
+        11{ switch($rvar[5])
+            { "StorageSystems"  { switch($rvar[7])
+                                  { "Volumes"     { switch($rvar[9])
+                                                      { "Snapshots"   { $result = Get-SFSnapshot -VolName ($rvar[8]) -SnapName ($rvar[10]) | ConvertTo-JSON -depth 10      }
+                                                      }
+                                                  }
+                                  }
+                                }
+            }    
+        }
       }
     ############################ END Runs ###################################
     if ( $PageMissing -or ( -not $result ) )

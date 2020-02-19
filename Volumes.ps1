@@ -1,58 +1,31 @@
-
 function Get-SFVolumeRoot {	
-param( 		
-	 )
-process{
-	$VolCount=0
-	$Members=@()
-	foreach ( $Volume in (Get-NSVolume) )
-		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
-							 }
-			$VolCount=$VolCount+1
-			$Members+=$localMembers
-			# Now lets get all of the Snapshots
-			foreach( $Snapshot in (Get-NSSnapshot -vol_id $Volume.id ) )
-				{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Snapshot.name 
-									 }
-					$Members+=$localMembers
-					$VolCount=$VolCount+1
-				}
-		}
-	$VolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes';
-					'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
-					'@odata.type'			=	'#VolumesCollection_1_4_0.VolumesCollection';
-					Name					=	'NimbleVolumeCollection';
-					'Members@odata.count'	=	$VolCount;
-					Members					=	$Members
-				  }
-	return $VolFolder
-}
-}
-
-function Get-SFVolumeOrSnap{
-param(	$VolumeOrSnapName
-	 )
-process{
-	$found=$false
-	if ( Get-NSVolume -name ($VolumeOrSnapName) )
-	{	$VolFound=$True
-		Return (Get-SFVolume -VolumeName $VolumeOrSnapName)
-	} else 
-	{	ForEach ($Volume in (Get-NSVolume) )
-			{	if ( Get-NSSnapshot -$VolID ($Volume.id) -name $VolumeOrSnapName)
-					{	$VolFound=$True
-						Return (Get-SFSnapShot -$VolID ($Volume.id) -name $VolumeOrSnapname) 
-					} 
+  param()
+  process
+  	{ 	$VolCount=0
+		$Members=@()
+		foreach ( $Volume in (Get-NSVolume) )
+			{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+								 }
+				$VolCount=$VolCount+1
+				$Members+=$LocalMembers
 			}
+		$VolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+						'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes';
+						'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
+						'@odata.type'			=	'#VolumesCollection_1_4_0.VolumesCollection';
+						Name					=	'NimbleVolumeCollection';
+						'Members@odata.count'	=	$VolCount;
+						Members					=	$Members
+					 }
+		return $VolFolder
 	}
 }
-}
+
 function Get-SFVolume {
-param(	$VolumeName
-	 )
-process{
-	$ProvidingPools=@()
+   param(	$VolumeName
+	    )
+   process
+   {$ProvidingPools=@()
 	$Volume = Get-NsVolume -name $VolumeName
 	$pool = $Volume.pool_name
 	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+$pool 
@@ -62,7 +35,7 @@ process{
 		{	$VolStatus_state = 'Enabled'
 			$VolStatus_Health= 'OK'
 		} else 
-		{	$VolStatue_state = 'StandbyOffline'
+		{	$VolStatus_state = 'StandbyOffline'
 			$VolStatus_health= 'Warning'	
 		}
 	if ( $Volume.Encryption_cipher -like 'none')
@@ -134,95 +107,19 @@ process{
 												@{	DurableNameFormat	=	'iqn';
 													DurableName			=	$Volume.target_name
 												 };
-											 )				
+											 )			
 				}
+	if ( (get-nssnapshot -vol_name $VolumeName) )
+		{	$Snapss = @(	@{	'@odata.id'	=	'/redfish/v1/'+$NimbleSerial+'/Volumes/'+$VolumeName+'/Snapshots'
+							 }
+					   )
+			$VolObj+= @{	Snapshots = $Snapss
+					   }
+		}
 	if ($Volume) 
 		{	Return $VolObj
 		}
-}
+  }
 }
 
-function Get-SFSnapshot {
-param(	$VolID,
-		$Name
-	 )
-process{
-	 $Volume = Get-NSVolume -volid $volid
-	$ProvidingVol = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
-					 }
-	if ( $Volume.Encryption_cipher -like 'none')
-		{	$Vol_Encryption = 'false'
-		} else 
-		{	$Vol_Encryption = 'true'			
-		}
-	if ( $Volume.Cache_policy -like 'normal' )
-		{	$Vol_CachePolicy = 'AdaptiveReadAhead'
-		} else 	
-		{	$Vol_CachePolicy = 'off'
-		}
-	$Snap = ( Get-NSSnapshot -volid $VolID -name $Name )
-	if ( $Snapshot.online)
-		{	$SnapStatus_state = 'Enabled'
-			$SnapStatus_Health= 'OK'
-		} else 
-		{	$SnapStatue_state = 'StandbyOffline'
-			$SnapStatus_health= 'Warning'	
-		}
-			$VolObj =@{'@Redfish.Copyright'		= 	$RedfishCopyright;
-						'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$Snapshot.name;
-						'@odata.id'				=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$Snapshot.name;
-						'@odata.type'			=	'#Volumes_1_4_0.Volume';
-						Id						=	$Snapshot.id;
-						Name					=	$Snapshot.name;
-						Description				=	$Snapshot.description;
-						Capacity				=	@{	AllocatedBytes	=	($Snapshot.Size * 1024)	
-													 };
-						Status					=	@{	State			=	$SnapStatus_state;
-														Health			=	$SnapStatus_health;
-												 	 };
-						BlockSizeBytes			=	$Volume.block_size;
-						MaxBlockSizeBytes		=	$Volume.block_size;
-						OptimumIOSizeBytes		=	$Volume.block_size;
-						Manufacturer			=	'HPENimbleStorage';
-						Encrypted				=	$Vol_Encryption;
-						EncryptionTypes			=	'ControllerAssisted';
-						ProvisioningPolicy		=	'thin';
-						Compressed				=	'true';
-						Deduplicated			=	$Volume.dedupe_enabled;
-						DisplayName				=	$Volume.Full_name+'+'+$Snap.name;
-						LowSpaceWarningThresholdPercents =	$Volume.warn_level;
-						VolumeType				=	'Snapshot';
-						VolumeUsageType			=	"Data";
-						ReadCachePolicyType		=	$Vol_CachePolicy;
-						WriteCacheState			=	'Enabled'
-						WriteCachePolicyType	=	"ProtectedWriteBack";
-						WriteCacheStateType		=	"Protected";
-						WriteHoleProtectionPolicyType = "Journaling";
-						CapacitySources			=	@(  @{ 	ProvidedCapacity	=	@{	AllocatedCapacity	=	$Volume.limit;
-																						ConsumedBytes		=	$Snapshot.snap_usage_compressed_bytes
-				 																 	 };	
-															ProvidingVolumes	=	@{	Volumes				=	@( $ProvidingVol )
-													 	 }							 }
-												 	 );
-						Identifiers				=	@(	@{	Manufacturer		=	'NimbleStorage'	
-														 };
-														@{	DurableNameFormat	=	'UUID';
-															DurableName			=	$Snapshot.id
-														 };
-														@{	DurableNameFormat	=	'vpd_ieee0';
-														 	DurableName			=	$Snapshot.vpd_ieee0
-														 };
-														@{	DurableNameFormat	=	'vpd_ieee1';
-														 	DurableName			=	$Snapshot.vpd_ieee1
-	  													 };
-														@{	DurableNameFormat	=	'vpd_t10';
-														   	DurableName			=	$Snapshot.vpd_t10
-														 };
-														@{	DurableNameFormat	=	'iqn';
-															DurableName			=	$Snapshot.target_name
-														 };
-													 )				
-					}
-			return $VolObj
-}
-}
+
