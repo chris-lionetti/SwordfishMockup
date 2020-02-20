@@ -10,6 +10,8 @@ if ( -not (get-module -ListAvailable -name HPENimblePowerShellToolkit ) )
     {   Write-Error "You must first download the HPENimblePowerShelLToolkit from the Microsoft PSGallery to use this software."
         exit
     }
+write-warning "Ensure that Port 5000 is currently not listened to."
+([System.Net.Sockets.TcpListener]5000).Stop()
 import-module -name HPENimblePowerShellToolkit
 connect-nsgroup -Group "$ArrayIP" -Credential $psCred -IgnoreServerCertificate
 
@@ -96,7 +98,7 @@ while ($DontEndYet)
                                       { "Events"    { $result = Get-SFEvent -EventId ($rvar[7])              | ConvertTo-JSON -depth 10 }
                                       }
                                   }
-                "StorageSystems"{ if ( (Get-NSArray).serial -like $rvar[6] )
+                "StorageSystems"  { if ( (Get-NSArray).serial -like $rvar[6] )
                                       { switch($rvar[7])
                                           { "Endpoints"                     { $result = Get-SFEndpointRoot            | ConvertTo-JSON -Depth 10 }
                                             "EndpointGroups"                { $result = Get-SFEndpointGroupRoot       | ConvertTo-JSON -Depth 10 }
@@ -104,7 +106,8 @@ while ($DontEndYet)
                                             "StorageGroups"                 { $result = Get-SFStorageGroupRoot        | ConvertTo-JSON -Depth 10 }
                                             "StoragePools"                  { $result = Get-SFPoolRoot                | ConvertTo-JSON -Depth 10 }
                                             "ConsistencyGroups"             { $result = Get-SFConsistencyGroupRoot    | ConvertTo-JSON -Depth 10 } 
-                                            "DataProtectionLineOfService"   { $result = Get-SFDataProtectionLoSRoot   | ConvertTo-JSON -Depth 10 }                   
+                                            "LineOfService"                 { write-host "asking for LOS"
+                                                                              $result = Get-SFLineOfServiceRoot       | ConvertTo-JSON -Depth 10 }                   
                                           } 
                                       }
                                 }
@@ -118,21 +121,30 @@ while ($DontEndYet)
                   "StorageSystems"  { switch($rvar[7])
                                         { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
                                           "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
-                                          "Volumes"                     { $result = Get-SFVolumeOrSnap -VolumeOrSnapName ($rvar[8])    | ConvertTo-JSON -Depth 10     }
+                                          "Volumes"                     { $result = Get-SFVolume -VolumeName ($rvar[8])                | ConvertTo-JSON -Depth 10     }
                                           "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
                                           "StoragePools"                { $result = Get-SFPool -Poolname ($rvar[8])                    | ConvertTo-JSON -Depth 10     } 
                                           "ConsistencyGroups"           { $result = Get-SFConsistencyGroup -VolColname ($rvar[8])      | ConvertTo-JSON -Depth 10     }  
-                                          "DataProtectionLineOfService" { $result = Get-SFDataProtectionLoS -PSid ($rvar[8])           | ConvertTo-JSON -Depth 10     }                   
+                                          "LineOfService"               { switch($rvar[8])
+                                                                            { "DataProtectionLineOfService" 
+                                                                                      { $result = Get-SFDataProtectionLoSRoot          | ConvertTo-JSON -Depth 10     }
+                                                                            }
+                                                                        }                   
                                         } 
                                     }
                 }
             }
         10{ switch($rvar[5])
               { "StorageSystems"  { switch($rvar[7])
-                                    { "Volumes"     { switch($rvar[9])
-                                                        { "Snapshots"   { $result = Get-SFSnapshotIndex -VolName ($rvar[8])            | ConvertTo-JSON -depth 10      }
+                                    { "Volumes"         { switch($rvar[9])
+                                                            { "Snapshots"   { $result = Get-SFSnapshotIndex -VolName ($rvar[8])            | ConvertTo-JSON -depth 10 }
+                                                            }
                                                         }
-                                                    }
+                                      "LineOfService"  { switch($rvar[8])
+                                                            { "DataProtectionLineOfService"
+                                                                            { $result = Get-SFDataProtectionLOS -PSId ($rvar[9])           | ConvertTo-JSON -depth 10 }
+                                                            }
+                                                        }
                                     }
                                   }
               }    
@@ -140,7 +152,7 @@ while ($DontEndYet)
         11{ switch($rvar[5])
             { "StorageSystems"  { switch($rvar[7])
                                   { "Volumes"     { switch($rvar[9])
-                                                      { "Snapshots"   { $result = Get-SFSnapshot -VolName ($rvar[8]) -SnapName ($rvar[10]) | ConvertTo-JSON -depth 10      }
+                                                      { "Snapshots"   { $result = Get-SFSnapshot -VolName ($rvar[8]) -SnapId ($rvar[10]) | ConvertTo-JSON -depth 10      }
                                                       }
                                                   }
                                   }

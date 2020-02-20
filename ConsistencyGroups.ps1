@@ -32,7 +32,7 @@ process{
 		}
 	$CGDPLOS=@()
 	foreach ($SL in ($VolCol.schedule_list) )
-		{	$CGDPLOS+= @{		'@odata.id'	=  	'/redfish/v1/StorageServices/'+$NimbleSerial+'/DataProtectionLineOfService/'+($SL.id) }
+		{	$CGDPLOS+= @{		'@odata.id'	=  	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService/'+($SL.id) }
 		}		
 	if ( $VolCol.is_handing_over -eq 'False' )
 		{	$IsConsistent = $True
@@ -62,7 +62,7 @@ process{
 				ConsistencyMethod		=	($AppSync);
 				ConsistencyType			=	($VolCol.app_sync);
 				IsConsistent			=	($IsConsistent);
-				Status					=	($IsConsistent);
+				Status					=	'Ok';
 				ReplicaInfo				=	($VolCol.replication_partner);
 				ReplicaType				=	($ReplicaType);
 				Volumes           		=   ($Vols);

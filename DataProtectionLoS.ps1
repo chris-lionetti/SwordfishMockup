@@ -1,17 +1,37 @@
+function Get-SFLineOfServiceRoot
+{	param()
+	process
+	{	$LOSObj=@{	'@odata.Copyright'		=	$SwordfishCopyright;	
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService';
+					'@odata.type'			=	'#LineOfServiceCollection.LineOfServiceCollection';
+					description				=	'Container for Subsequent Data Protection Services';
+					longDescription			=	'Root Container for Protection Schedules implemented using Data Protection Lines of Service';
+					deletable				=	'false';
+					insertable				=	'false';
+					updatable				=	'false';
+					'members@odata.count'	=	1;
+					members					=	@(	@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfSerice/DataProtectionLineOfService'
+													 }
+												 )
+				}
+		return $LOSObj
+	}
+}
+
 function Get-SFDataProtectionLoSRoot {	
 param( )
 process{
 	$Members=@()
 	$PSs = (Get-NSProtectionSchedule)
 	foreach ($PS in $PSs )
-		{	$LocalMembers = @( @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/DataProtectionLineOfService/'+($PS.id)
+		{	$LocalMembers = @( @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService/'+($PS.id)
                                 }
                              )
 			$Members+=$localMembers
 		}
 	$PSRoot = @{	'@odata.Copyright'		=	$SwordfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/DataProtectionLineOfService';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/DataProtectionLineOfService';
+					'@odata.context'		=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
+					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
 					'@odata.type'			=	'#DataProtectionLineOfService_1_0_0.DataProtectionLineOfService';
 					Name					=	'Nimble Protection Policies';
 					'Members@odata.count'	=	($PSs).count;
@@ -55,10 +75,6 @@ param( 	$PSid
 process{
 	$PS = ( Get-NSProtectionSchedule -id $PSid )
 	if ($PS.downstream_partner -or $PS.upstream_partner)
-		{	$IsIsolated  = $True
-			$ReplicaType = 'Snapshot'
-			$ReplicaLocation = 'Local' 
-		} else 
 		{	$IsIsolated  = $False
 			$ReplicaType = 'Mirror'
 			if ($PS.downsteam_partner)
@@ -66,6 +82,10 @@ process{
 				} else 
 				{	$ReplicaLocation = $PS.upstream_partner					
 				}
+		} else 
+		{	$IsIsolated  = $True
+			$ReplicaType = 'Snapshot'
+			$ReplicaLocation = 'Local' 
 		}
 	$days = ($PS.days).split(',')
 	$BYDY='SU,MO,TU,WE,TH,FR,SA'
@@ -112,8 +132,8 @@ process{
 	$RepeatInterval='R'+$PS.num_retain
 	$PSG = @{	title					= 	"#DataProtectionLoSCapabilities.v1_2_0.DataProtectionLoSCapabilities"
 				'@odata.Copyright'    	= 	$SwordfishCopyright;
-				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystem/'+$NimbleSerial+'/DataProtectionLineOfService';
-				'@odata.id'             =	'/redfish/v1/StorageServices/'+$NimbleSerial+'/DataProtectionLineOfService/'+($PS.id);
+				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystem/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
+				'@odata.id'             =	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfSerice/DataProtectionLineOfService/'+($PS.id);
 				'@odata.type'           =	'#DataProtectionLineOfService.v1_2_0.DataProtectionLineOfService';
 				Id                      =   ($PS.id);
 				Name                    =	($PS.name);

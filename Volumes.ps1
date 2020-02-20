@@ -116,6 +116,11 @@ function Get-SFVolume {
 			$VolObj+= @{	Snapshots = $Snapss
 					   }
 		}
+	if ( $Volume.volcoll_name )
+        {   $VolColl= @{ ConsistencyGroup    =   '/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroup/'+$Volume.volcoll_name
+                       }
+            $VolObj+=$VolColl
+        }
 	if ($Volume) 
 		{	Return $VolObj
 		}

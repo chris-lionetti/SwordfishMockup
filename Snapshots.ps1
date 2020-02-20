@@ -5,7 +5,7 @@ function Get-SFSnapshotIndex{
     {   $SnapIndex=@()
         $Snapcount=0
         foreach ($snapshot in get-nssnapshot -vol_name $VolName)
-            {	$LocalMembers=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes'+$VolName+'/SnapShots/'+$Snapshot.name
+            {	$LocalMembers=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes'+$VolName+'/SnapShots/'+$Snapshot.id
                                }
                 $SnapIndex+=$LocalMembers
                 $Snapcount+=1
@@ -21,31 +21,10 @@ function Get-SFSnapshotIndex{
         Return $SnapColObj
     }
 }
-function Get-SFVolumeOrSnap{
-    param(	$VolumeOrSnapName
-         )
-    process
-    {   $VolFound=$false
-        if ( Get-NSVolume -name ($VolumeOrSnapName) )
-        {	$VolFound=$True
-            Return (Get-SFVolume -VolumeName $VolumeOrSnapName)
-        } else 
-        {	ForEach ($Volume in (Get-NSVolume) )
-                {	if ( Get-NSSnapshot -$VolID ($Volume.id) -name $VolumeOrSnapName)
-                        {	$VolFound=$True
-                            Return (Get-SFSnapShot -$VolID ($Volume.id) -name $VolumeOrSnapname) 
-                        } 
-                }
-        }
-        if ( $VolFound -eq $False )
-            {   Return
-            }
-    }
-}
      
 function Get-SFSnapshot {
     param(	$VolName,
-            $SnapName
+            $SnapId
          )
     process
     {   $Volume = Get-NSVolume -Name $VolName
@@ -61,7 +40,7 @@ function Get-SFSnapshot {
             } else 	
             {	$Vol_CachePolicy = 'off'
             }
-        $Snapshot = ( Get-NSSnapshot -Vol_Name $VolName -Name $SnapName )
+        $Snapshot = ( Get-NSSnapshot -Vol_Name $VolName -id $SnapId )
         if ( $Snapshot.online)
             {	$SnapStatus_state = 'Enabled'
                 $SnapStatus_Health= 'OK'
@@ -70,8 +49,8 @@ function Get-SFSnapshot {
                 $SnapStatus_health= 'Warning'	
             }
         $SnapObj =@{    '@Redfish.Copyright'		= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.name;
-                        '@odata.id'				=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.name;
+                        '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
+                        '@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
                         '@odata.type'			=	'#Volumes_1_4_0.Volume';
                         Id						=	$Snapshot.id;
                         Name					=	$Snapshot.name;
@@ -124,6 +103,11 @@ function Get-SFSnapshot {
                                                          };
                                                      )				
                     }
+        if ( $Volume.volcoll_name )
+            {   $VolColl= @{ ConsistencyGroup    =   '/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroup/'+$Volume.volcoll_name
+                           }
+                $SnapObj+=$VolColl
+            }
         return $SnapObj
     }
 }

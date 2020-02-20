@@ -10,7 +10,8 @@ function Get-SFRedfishRoot {
 						Systems				= 	@{  '@odata.id'	=	'/redfish/v1/Systems'			};		
 						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/StorageSystems'	};
 						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
-						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		}
+						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
+						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		}
 					}
 	Return $ServicesRoot
 }
@@ -53,7 +54,7 @@ process{
 				StorageGroups				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups';
 				StoragePools				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
 				Volumes						=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes';
-				DataProtectionLineOfService	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/DataProtectionLineOfService'	
+				LineOfService				= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService'	
 		  }
 	if ($Array.serial -like $ArrayName) 
 	{	Return $SSA
