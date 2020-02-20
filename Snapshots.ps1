@@ -10,14 +10,14 @@ function Get-SFSnapshotIndex{
                 $SnapIndex+=$LocalMembers
                 $Snapcount+=1
             }
-        $SnapColObj=@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
-                        '@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
-                        '@odata.type'			=	'#SnapshotsCollection_1_0_0.SnapshotsCollection';
-                        Name					=	'NimbleSnapshotCollection';
-                        'Members@odata.count'	=	$SnapCount;
-                        Members					=	$SnapIndex		
-                     }
+        $SnapColObj=[ordered]@{	    '@Redfish.Copyright'	= 	$RedfishCopyright;
+                                    '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
+                                    '@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
+                                    '@odata.type'			=	'#SnapshotsCollection_1_0_0.SnapshotsCollection';
+                                    Name					=	'NimbleSnapshotCollection';
+                                    'Members@odata.count'	=	$SnapCount;
+                                    Members					=	$SnapIndex		
+                              }
         Return $SnapColObj
     }
 }
@@ -48,7 +48,8 @@ function Get-SFSnapshot {
             {	$SnapStatus_state = 'StandbyOffline'
                 $SnapStatus_health= 'Warning'	
             }
-        $SnapObj =@{    '@Redfish.Copyright'		= 	$RedfishCopyright;
+        $SnapObj = [ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
                         '@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
                         '@odata.type'			=	'#Volumes_1_4_0.Volume';

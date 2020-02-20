@@ -1,7 +1,8 @@
 function Get-SFLineOfServiceRoot
 {	param()
 	process
-	{	$LOSObj=@{	'@odata.Copyright'		=	$SwordfishCopyright;	
+	{	$LOSObj=[ordered]@{
+					'@odata.Copyright'		=	$SwordfishCopyright;	
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService';
 					'@odata.type'			=	'#LineOfServiceCollection.LineOfServiceCollection';
 					description				=	'Container for Subsequent Data Protection Services';
@@ -29,7 +30,8 @@ process{
                              )
 			$Members+=$localMembers
 		}
-	$PSRoot = @{	'@odata.Copyright'		=	$SwordfishCopyright;
+	$PSRoot = [ordered]@{
+					'@odata.Copyright'		=	$SwordfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
 					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
 					'@odata.type'			=	'#DataProtectionLineOfService_1_0_0.DataProtectionLineOfService';
@@ -130,7 +132,7 @@ process{
 						}
 		}
 	$RepeatInterval='R'+$PS.num_retain
-	$PSG = @{	title					= 	"#DataProtectionLoSCapabilities.v1_2_0.DataProtectionLoSCapabilities"
+	$PSG = [ordered]@{
 				'@odata.Copyright'    	= 	$SwordfishCopyright;
 				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystem/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
 				'@odata.id'             =	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfSerice/DataProtectionLineOfService/'+($PS.id);
@@ -144,7 +146,7 @@ process{
 				RecoveryTimeObjective	=	0
 				Schedule				=	$Schedule;
 				RecoveryPointObjective	=	$RPO;
-			}
+					}
 	Return $PSG 
 }
 }

@@ -9,7 +9,8 @@ process{
 							 }
 			$Members+=$localMembers
 		}
-	$PoolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$PoolFolder =[ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
 					'@odata.type'			=	'#StoragePoolsCollection_1_0_0.StoragePoolsCollection';
@@ -39,15 +40,10 @@ process{
 		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Vol.name
 						 }
 			$VolsObj+=$VolObj
-			$Snaps = Get-NSSnapShot -vol_id ($Vol.id)
-			foreach ( $Snap in $Snaps )
-				{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Snap.name
-							 	 } 
-					$VolsObj+=$VolObj
-				}
 		}
 	$CapacitySources=@{}
-	$PoolObj =@{'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$PoolObj =[ordered]@{
+				'@Redfish.Copyright'	= 	$RedfishCopyright;
 				'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
 				'@odata.id'				=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
 				'@odata.type'			=	'#StoragePool_1_0_0.StoragePool';

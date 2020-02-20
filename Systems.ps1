@@ -1,7 +1,8 @@
 function Get-SFSystemRoot {
-	param(	
-		 )
-	$SRoot=@{	'@odata.type'		=	'#ComputerSystemCollection.ComputerSystempCollection';
+	param()
+	process{
+		$SRoot=[ordered]@{
+				'@odata.type'		=	'#ComputerSystemCollection.ComputerSystempCollection';
 				'@odata.Copyright'	=	$RedfishCopyright;
 				'@odata.context'	=	'/redfish/v1/$metadata#Systems';
 				'@odata.id'			=	'/redfish/v1/StorageSystems';
@@ -10,6 +11,7 @@ function Get-SFSystemRoot {
 				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
 										 	}
 										 )	
-			 }
-	Return $SRoot
+			 		 	 }
+		Return $SRoot
+	}
 }

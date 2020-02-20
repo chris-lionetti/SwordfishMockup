@@ -1,7 +1,8 @@
 function Get-SFEventServiceRoot {	
     param()
     process{
-        $EventRoot =  @{'@Redfish.Copyright'	= 	$RedfishCopyright;
+        $EventRoot = [ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#EventService.EventService';
                         '@odata.id'				=	'/redfish/v1/EventService';
                         '@odata.type'			=	'#EventService.v1_0_0.EventService';
@@ -12,7 +13,7 @@ function Get-SFEventServiceRoot {
                                                         Health  =  'OK' 
                                                      };
                         Events                  =   @{  '@odata.id' =   '/redfish/v1/EventService/Events'   }
-                      }
+                               }
         return $EventRoot
     }
 }
@@ -27,14 +28,15 @@ function Get-SFEventCol {
                                  }
                 $Members+=$localMembers
             }
-        $EventCol =   @{'@Redfish.Copyright'	= 	$RedfishCopyright;
+        $EventCol = [ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#Event.Event';
                         '@odata.id'				=	'/redfish/v1/EventService/Event';
                         '@odata.type'			=	'#Event.Event';
                         Name					=   'Event Collection';
                         Id                      =   'Event Collection';
                         Events                  =   $Members
-                       }
+                             }
         if ( $Events )  { return $EventCol 
                         } else 
                         { return 
@@ -43,10 +45,12 @@ function Get-SFEventCol {
 }
 
 function Get-SFEvent {
-    param ( $EventId )
-    process{    $event= ( Get-NSEvent -id $EventId )
-                if (Get-NSEvent -id $EventId)
-                    {   $Event =   @{   '@Redfish.Copyright'	= 	$RedfishCopyright;
+    param ( $EventId 
+          )
+    process{   
+        $event= ( Get-NSEvent -id $EventId )
+        if (Get-NSEvent -id $EventId)
+            {   $Event =  [ordered]@{   '@Redfish.Copyright'	= 	$RedfishCopyright;
                                         '@odata.context'		=	'/redfish/v1/$metadata#Event.Event';
                                         '@odata.id'				=	'/redfish/v1/EventService/Event/'+$event.id;
                                         '@odata.type'			=	'#Event.Event';
@@ -59,9 +63,9 @@ function Get-SFEvent {
                                                                         EventTimestamp = $event.timestamp;
                                                                      }
                                     }
-                        return $Event
-                    } else 
-                    {   return
-                    }
+                return $Event
+            } else 
+            {   return
             }
+    }
 }

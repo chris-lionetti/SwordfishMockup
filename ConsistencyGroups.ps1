@@ -9,14 +9,15 @@ process{
                              )
 			$Members+=$localMembers
 		}
-	$CGRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$CGRoot = [ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#ConsistencyGroup/'+$NimbleSerial+'/ConsistencyGroups';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups';
 					'@odata.type'			=	'#ConsistencyGroup.v1_0_1.ConsistencyGroup';
 					Name					=	'Nimble Volume Collection (Consistency Groups)';
 					'Members@odata.count'	=	($VolCols).count;
 					Members					=	@( $Members )
-			   }
+			   		   }
 	return $CGRoot
 }
 }
@@ -51,7 +52,8 @@ process{
 		{	$ReplicaType = 'mirror'	
 		}
 	$CG=@()
-    $CG = @{	'@Redfish.Copyright'    = 	$RedfishCopyright;
+    $CG = [ordered]@{
+				'@Redfish.Copyright'    = 	$RedfishCopyright;
 				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/ConsistencyGroup';
 				'@odata.id'             =	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups/'+($VolCol.Name);
 				'@odata.type'           =	'#ConsistencyGroup.v1_0_1.ConsistencyGroup';
@@ -67,7 +69,7 @@ process{
 				ReplicaType				=	($ReplicaType);
 				Volumes           		=   ($Vols);
 				DataProtectonLineOfService=	($CGDPLOS)
-		   }
+		   		  }
 	return $CG 
 }
 }

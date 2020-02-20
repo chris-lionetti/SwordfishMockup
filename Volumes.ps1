@@ -9,14 +9,15 @@ function Get-SFVolumeRoot {
 				$VolCount=$VolCount+1
 				$Members+=$LocalMembers
 			}
-		$VolFolder =@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+		$VolFolder =[ordered]@{	
+						'@Redfish.Copyright'	= 	$RedfishCopyright;
 						'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes';
 						'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
 						'@odata.type'			=	'#VolumesCollection_1_4_0.VolumesCollection';
 						Name					=	'NimbleVolumeCollection';
 						'Members@odata.count'	=	$VolCount;
 						Members					=	$Members
-					 }
+					 		 }
 		return $VolFolder
 	}
 }
@@ -53,7 +54,8 @@ function Get-SFVolume {
 		} else 	
 		{	$Vol_CachePolicy = 'off'
 		}
-	$VolObj =@{'@Redfish.Copyright'		= 	$RedfishCopyright;
+	$VolObj =[ordered]@{
+				'@Redfish.Copyright'		= 	$RedfishCopyright;
 				'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$Volume.name;
 				'@odata.id'				=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$Volume.name;
 				'@odata.type'			=	'#Volumes_1_4_0.Volume';

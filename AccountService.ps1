@@ -1,14 +1,15 @@
 function Get-SFAccountServiceRoot {	
     param()
     process{
-        $AccountRoot =@{'@Redfish.Copyright'	= 	$RedfishCopyright;
+        $AccountRoot =[ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#AccountService.AccountService';
                         '@odata.id'				=	'/redfish/v1/AccountService';
                         '@odata.type'			=	'#AccountService.AccountService';
                         Name					=   'Account Service';
                         Accounts				=	@{  '@odata.id' =   '/redfish/v1/AccountService/Accounts'   };
                         Roles				    =	@{  '@odata.id' =   '/redfish/v1/AccountService/Roles'      };
-                      }
+                                }
         return $AccountRoot
     }
 }
@@ -24,14 +25,15 @@ function Get-SFAccountCol {
                 $Members+=$localMembers
             }
         
-        $AccountCol =@{'@Redfish.Copyright'	= 	$RedfishCopyright;
+        $AccountCol =[ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection';
                         '@odata.id'				=	'/redfish/v1/AccountService/Accounts';
                         '@odata.type'			=	'#ManagerAccountCollection.ManagerAccountCollection';
                         Name					=   'Account Collection';
                         'Members@odata.count'   =   $Members.count
                         Members				    =	$Members;
-                      }
+                              }
         return $AccountCol
     }
 }
@@ -49,7 +51,8 @@ function Get-SFAccount {
                                 Health= 'OK'
                            }
             }
-        $Account =  @{  '@Redfish.Copyright'	= 	$RedfishCopyright;
+        $Account =  [ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#ManagerAccount.ManagerAccount';
                         '@odata.id'				=	'/redfish/v1/AccountService/Accounts/'+$AccountName;
                         '@odata.type'			=	'#ManagerAccount.ManagerAccount';
@@ -62,11 +65,11 @@ function Get-SFAccount {
                         Links                    =  @{  Role = @{  '@odata.id' =   '/redfish/v1/AccountService/Roles/'+($user.role)
                                                                 }
                                                      }
-                      }
+                             }
         if ($user)  
         {   return $Account
-        } else {
-            return
+        } else 
+        {   return
         }
     }
 }
@@ -74,7 +77,8 @@ function Get-SFAccount {
 function Get-SFAccountRoleCol {	
     param()
     process{
-        $RolesCol =   @{'@Redfish.Copyright'	= 	$RedfishCopyright;
+        $RolesCol =  [ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#RoleCollection.RoleCollection';
                         '@odata.id'				=	'/redfish/v1/AccountService/Roles';
                         '@odata.type'			=	'#RoleCollection.RoleCollection';
@@ -85,7 +89,7 @@ function Get-SFAccountRoleCol {
                                                         @{  '@odata.id'  =   '/redfish/v1/AccountService/Roles/operator'        };
                                                         @{  '@odata.id'  =   '/redfish/v1/AccountService/Roles/guest'           }
                                                      )    
-                      }
+                              }
         return $RolesCol
     }
 }
@@ -112,7 +116,8 @@ function Get-SFAccountRole {
                                         }
                 }
         $RoleId=(get-nsuser | where { $_.role -like $RoleName } | select role_id -last 1 ).role_id
-        $Role =  @{     '@Redfish.Copyright'	= 	$RedfishCopyright;
+        $Role =  [ordered]@{
+                        '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.context'		=	'/redfish/v1/$metadata#Role.Role';
                         '@odata.id'				=	'/redfish/v1/AccountService/Roles/'+$RoleName;
                         '@odata.type'           =   '#Role.v1_1_0.Role';

@@ -20,7 +20,8 @@ function Get-SFEndpointGroupRoot {
 							 }
 			$Members+=$localMembers
 		}
-	$EPGRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$EPGRoot = [ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroups';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups';
 					'@odata.type'			=	'#EndpointGroups_1_4_0.EndpointGroups';
@@ -61,7 +62,8 @@ function Get-SFInitiatorEndpointGroup {
 			{	if($Map.Initiator_Group_id -like $InitG.id)
 				{	$StorGP+=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id	
 			}	}			 }		
-		$EPG = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+		$EPG = [ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroup';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$InitG.name;
 					'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
@@ -106,7 +108,8 @@ function Get-SFTargetEndpointGroup {
 								$StorGP+=@{'@odata.id'	= 	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StorageGroups/'+$map.id
 										  }
 		}	}		}	}	}
-		$EPG = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+		$EPG = [ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroup';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name;
 					'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
@@ -142,7 +145,8 @@ function Get-SFTargetEndpointGroup {
 	{	$TargEPG+=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name
 				   }
 	}
-	$EPG = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$EPG = [ordered]@{
+				'@Redfish.Copyright'	= 	$RedfishCopyright;
 				'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroupCollection/'+$NimbleSerial+'/EndpointGroup';
 				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets';
 				'@odata.type'			=	'#EndpointGroupCollection.v1_3_1.EndpointGroupCollection';

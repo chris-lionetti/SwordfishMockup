@@ -1,7 +1,9 @@
 function Get-SFRedfishRoot {
 	param(
 	     )
-	$ServicesRoot=@{	'@odata.type'		=	'#ServiceRoot.v1_0_2.ServiceRoot';
+	process{
+		$ServicesRoot=[ordered]@{
+						'@odata.type'		=	'#ServiceRoot.v1_0_2.ServiceRoot';
 						'@odata.Copyright'	=	$RedfishCopyright;
 						'@odata.context'	=	'/redfish/v1/$metadata#ServiceRoot';
 						'@odata.id'			=	'/redfish/v1';
@@ -12,14 +14,17 @@ function Get-SFRedfishRoot {
 						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
 						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
 						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		}
-					}
-	Return $ServicesRoot
+							   }
+		Return $ServicesRoot
+	}
 }
 
 function Get-SFStorageSystemRoot {
 	param(	
 		 )
-	$SSRoot=@{	'@odata.type'		=	'#StorageSystemCollection.1.1.0.StorageSystempCollection';
+	process{
+		$SSRoot=[ordered]@{	
+				'@odata.type'		=	'#StorageSystemCollection.1.1.0.StorageSystempCollection';
 				'@odata.Copyright'	=	$RedfishCopyright;
 				'@odata.context'	=	'/redfish/v1/$metadata#StorageSystem.StorageSystem';
 				'@odata.id'			=	'/redfish/v1/StorageSystems';
@@ -27,16 +32,18 @@ function Get-SFStorageSystemRoot {
 				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
 										 	}
 										 )	
-			 }
-	Return $SSRoot
+			 		  }
+		Return $SSRoot
+	}
 }
 
 function Get-SFStorageSystem {
-param(	$ArrayName
-	 )
-process{
-	$Array= Get-NSArray
-	$SSA=@{		'@odata.type'				=	'#StorageSystemCollection.1.0.0.StorageSystemCollection';
+	param(	$ArrayName
+	 	 )
+	process{
+		$Array= Get-NSArray
+		$SSA=[ordered]@{
+				'@odata.type'				=	'#StorageSystemCollection.1.0.0.StorageSystemCollection';
 				'@odata.Copyright'			=	$RedfishCopyright;
 				'@odata.context'			=	'/redfish/v1/$metadata#StorageSystem.StorageSystem'+$NimbleSerial;
 				'@odata.id'					=	'/redfish/v1/StorageSystems/'+$NimbleSerial;
@@ -55,9 +62,9 @@ process{
 				StoragePools				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
 				Volumes						=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes';
 				LineOfService				= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService'	
-		  }
-	if ($Array.serial -like $ArrayName) 
-	{	Return $SSA
+			  		  }
+		if ($Array.serial -like $ArrayName) 
+			{	Return $SSA
+			}
 	}
-}
 }

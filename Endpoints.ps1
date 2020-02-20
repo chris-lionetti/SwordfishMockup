@@ -21,7 +21,8 @@ process{
 							 }
 			$Members+=$localMembers
 		}	
-	$EPRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$EPRoot = [ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoints';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints';
 					'@odata.type'			=	'#EndpointsCollection_1_4_0.EndpointsCollection';
@@ -64,7 +65,8 @@ function Get-SFEndpointTarget {
 						{	$EPHealth = 'Degraded'
 							$EPState  = 'Disabled'
 						}	
-					$EPRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+					$EPRoot = [ordered]@{
+									'@Redfish.Copyright'	= 	$RedfishCopyright;
 									'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
 									'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
 									'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
@@ -88,7 +90,8 @@ param( 	$EndpointName
 	 )
 process{
 	$Initiator = ( Get-NSInitiator -id $EndpointName )
-	$EP = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+	$EP = [ordered]@{
+					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
 					'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
