@@ -20,7 +20,7 @@ function Get-SFAccountCol {
         $Members=@()
         $users=( Get-NsUser )
         foreach ($user in $users)
-            {	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/AccountService/Accounts/'+$user.username 
+            {	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/AccountService/Accounts/'+$user.name 
                                  }
                 $Members+=$localMembers
             }

@@ -24,7 +24,7 @@ function Get-SFEventCol {
         $Members=@()
         $Events=( Get-NsEvent -severity 'warning' ) + ( Get-NSEvent -severity 'critical') + ( Get-NSEvent -severity 'notice')
         foreach ($Event in $Events)
-            {	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/EventService/Events/'+$event.id
+            {	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/EventService/Events/'+$event.id
                                  }
                 $Members+=$localMembers
             }

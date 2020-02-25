@@ -8,7 +8,7 @@ process{
 	foreach ($disk in $disks)
 		{	if ($Shelf.serial -like $disk.shelf_serial )
 			{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
-				$DriveObj=@{ '@odata.id'	= 	$localDiskname
+				$DriveObj=@{ '@odata.id'	= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Drives/"+$localDiskname
 						   }
 				$DrivesObj+=$DriveObj
 			}

@@ -9,7 +9,7 @@ process{
 			$NL = $AL.Nic_list
 			foreach ( $EP in $NL)
 				{	$Endpointname=$configname+"_"+$EP.name
-					$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Endpointname 
+					$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Endpointname 
 									 }
 					if ($configname -like 'Active')
 					{	$Members+=$localMembers
@@ -17,7 +17,7 @@ process{
 				}
 		}
 	foreach ( $Initiator in ( Get-NSInitiator ) )
-		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id 
+		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id 
 							 }
 			$Members+=$localMembers
 		}	
@@ -89,8 +89,9 @@ function Get-SFEndpointInitiator {
 param( 	$EndpointName	
 	 )
 process{
-	$Initiator = ( Get-NSInitiator -id $EndpointName )
-	$EP = [ordered]@{
+	if ( Test-SFID($EndpointName) )
+	{	$Initiator = ( Get-NSInitiator -id $EndpointName -ErrorAction SilentlyContinue )
+		$EP = [ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
@@ -109,8 +110,11 @@ process{
 													 }
 												 )
 		   }
-	if ($Initiator)
-		{	return $EP
-		}		
+		if ($Initiator)
+			{	return $EP
+			}
+	} else
+	{	return	
+	}
 }
 }

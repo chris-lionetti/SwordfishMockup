@@ -4,7 +4,7 @@ function Get-SFVolumeRoot {
   	{ 	$VolCount=0
 		$Members=@()
 		foreach ( $Volume in (Get-NSVolume) )
-			{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+			{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
 								 }
 				$VolCount=$VolCount+1
 				$Members+=$LocalMembers

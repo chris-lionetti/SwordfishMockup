@@ -5,7 +5,7 @@ function Get-SFSnapshotIndex{
     {   $SnapIndex=@()
         $Snapcount=0
         foreach ($snapshot in get-nssnapshot -vol_name $VolName)
-            {	$LocalMembers=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes'+$VolName+'/SnapShots/'+$Snapshot.id
+            {	$LocalMembers=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/SnapShots/'+$Snapshot.id
                                }
                 $SnapIndex+=$LocalMembers
                 $Snapcount+=1

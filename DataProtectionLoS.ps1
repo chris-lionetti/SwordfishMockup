@@ -1,9 +1,9 @@
-function Get-SFLineOfServiceRoot
+function Get-SFLinesOfServiceRoot
 {	param()
 	process
 	{	$LOSObj=[ordered]@{
 					'@odata.Copyright'		=	$SwordfishCopyright;	
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService';
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LinesOfService';
 					'@odata.type'			=	'#LineOfServiceCollection.LineOfServiceCollection';
 					description				=	'Container for Subsequent Data Protection Services';
 					longDescription			=	'Root Container for Protection Schedules implemented using Data Protection Lines of Service';
@@ -11,7 +11,7 @@ function Get-SFLineOfServiceRoot
 					insertable				=	'false';
 					updatable				=	'false';
 					'members@odata.count'	=	1;
-					members					=	@(	@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfSerice/DataProtectionLineOfService'
+					members					=	@(	@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LinesOfSerice/DataProtectionLinesOfService'
 													 }
 												 )
 				}
@@ -25,16 +25,16 @@ process{
 	$Members=@()
 	$PSs = (Get-NSProtectionSchedule)
 	foreach ($PS in $PSs )
-		{	$LocalMembers = @( @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService/'+($PS.id)
+		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LinesOfService/DataProtectionLinesOfService/'+($PS.id)
                                 }
                              )
 			$Members+=$localMembers
 		}
 	$PSRoot = [ordered]@{
 					'@odata.Copyright'		=	$SwordfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
-					'@odata.id'				=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
-					'@odata.type'			=	'#DataProtectionLineOfService_1_0_0.DataProtectionLineOfService';
+					'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/LinesOfService/DataProtectionLinesOfService';
+					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
+					'@odata.type'			=	'#DataProtectionLinesOfService_1_0_0.DataProtectionLinesOfService';
 					Name					=	'Nimble Protection Policies';
 					'Members@odata.count'	=	($PSs).count;
 					Members					=	@( $Members )
@@ -134,8 +134,8 @@ process{
 	$RepeatInterval='R'+$PS.num_retain
 	$PSG = [ordered]@{
 				'@odata.Copyright'    	= 	$SwordfishCopyright;
-				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystem/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
-				'@odata.id'             =	'/redfish/v1/StorageServices/'+$NimbleSerial+'/LineOfSerice/DataProtectionLineOfService/'+($PS.id);
+				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystem/'+$NimbleSerial+'/LinesOfService/DataProtectionLineOfService';
+				'@odata.id'             =	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LinesOfSerice/DataProtectionLineOfService/'+($PS.id);
 				'@odata.type'           =	'#DataProtectionLineOfService.v1_2_0.DataProtectionLineOfService';
 				Id                      =   ($PS.id);
 				Name                    =	($PS.name);

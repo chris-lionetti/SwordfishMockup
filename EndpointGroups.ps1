@@ -8,7 +8,7 @@ function Get-SFEndpointGroupRoot {
 	foreach($sub in get-nsSubnet)
 	{	if ($Sub.allow_iscsi -like 'True')
 		{	# This subnet allows iSCSI, it should become a target group
-			$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$Sub.name
+			$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$Sub.name
 							 }
 			$Members+=$localMembers
 	}	}
@@ -16,7 +16,7 @@ function Get-SFEndpointGroupRoot {
 					 }
 	$Members+=$localMembers
 	foreach ($group in $initiatorGroups)
-		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$group.name
+		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$group.name
 							 }
 			$Members+=$localMembers
 		}
@@ -33,18 +33,19 @@ function Get-SFEndpointGroupRoot {
 }	
 
 function Get-SFEndpointGroup {
-	param(
-			$EndpointGroupName
-	)
-	$Result1 = Get-GFEndpointGroupInitiator -EndpointGroupName $EndpointGroupName
-	$Result2 = Get-SFEndpointGroupTarget -EndpointGroupName  $EndpointGroupName
+	param(	$EndpointGroupName
+		 )
+	$result=''
+	$Result1 = Get-SFInitiatorEndpointGroup -EndpointGroupName $EndpointGroupName
+	$Result2 = Get-SFTargetEndpointGroup 	-EndpointGroupName $EndpointGroupName
 	if ($result1) { $result = $result1 } else { $result=$result2 }
+	return $result
 }
 
 function Get-SFInitiatorEndpointGroup {
 	param( 	$EndpointGroupName
 		 )
-	$InitG = ( Get-NSInitiatorGroup -name $EndpointGroupName )
+	$InitG = ( Get-NSInitiatorGroup -name $EndpointGroupName -erroraction SilentlyContinue )
 	write-host "Getting Hosname $EndpointGroupName"
 	$AccessMaps = ( Get-NSAccessControlRecord )
 	$InitEP=@()

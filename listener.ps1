@@ -50,15 +50,28 @@ while ($DontEndYet)
     $response   = $context.Response                 # Set up my object to allow me to respond
     $PageMissing=$False                             # Used if you request a page that doesnt exist. 
     $Result     = ''                                # The result should be blank until I explicity set it.
-    if ($request.Url -match '/end$')                # This is the escape clause that lets you shut down the responder. 
+    $req = [string]$request.url                            
+    write-host "THe URL Sent was $req"
+    if ($Req -match '/end$')                        # This is the escape clause that lets you shut down the responder. 
         {   $DontEndYet=$False                      #   simply send a request to http://localhost:5000/end
         } 
-    $rvar = ([String]$request.Url).split("/")       # Split request URL to get command and options. RVAR = Request Variables
-    if ( -not ( $rvar[3] -eq "redfish" -and $rvar[4] -eq 'v1' ) ) 
+    if ( $Req.endswith('/') )
+        {   write-host "Ends with a forward slash"
+            $Req=$Req.Substring(0, ($Req.length)-1 )
+        }
+#    $Req.trimend('/')
+    write-host "THe trim URL was $req"
+    $rvar = ($Req).split("/")                       # Split request URL to get command and options. RVAR = Request Variables
+    if ( -not ( $rvar[3] -eq "redfish" -and $rvar[4] -eq 'v1' )  ) 
         {   $PageMissing=$True                      # The 3rd and 4th split of the request SHOULD be redfish and V1, otherwise throw an error
         }   
     switch ($rvar.count)                            # The number of parts of the request denotes how complex a request it is.
-      { 5 { $result = Get-SFRedfishRoot | ConvertTo-JSON -Depth 10      # Return the Redfish root, i.e. the request was HTTP://localhost:5000/redfish/v1 
+      { 4 { $result = Get-SFSystemCore | ConvertTo-JSON     # Return the Redfish root, i.e. the request was HTTP://localhost:5000/redfish
+            if ($rvar[3] -eq "redfish")
+                {   $PageMissing=$False
+                }
+          }
+        5 { $result = Get-SFRedfishRoot | ConvertTo-JSON     # Return the Redfish root, i.e. the request was HTTP://localhost:5000/redfish/v1 
           }
         6 { switch($rvar[5])                        # The Request has start Redfish/v1, but then must contain the following as the last element of the request
               { "Chassis"         { $result = Get-SFChassisRoot                          | ConvertTo-JSON -Depth 10  }

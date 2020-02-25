@@ -4,7 +4,7 @@ process{
 	$Members=@()
 	$VolCols = (Get-NSVolumeCollection)
 	foreach ($VolCol in $VolCols)
-		{	$LocalMembers = @( @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups/'+($VolCol.name)
+		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups/'+($VolCol.name)
                                 }
                              )
 			$Members+=$localMembers

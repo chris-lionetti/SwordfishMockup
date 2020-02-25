@@ -1,23 +1,3 @@
-function Get-SFRedfishRoot {
-	param(
-	     )
-	process{
-		$ServicesRoot=[ordered]@{
-						'@odata.type'		=	'#ServiceRoot.v1_0_2.ServiceRoot';
-						'@odata.Copyright'	=	$RedfishCopyright;
-						'@odata.context'	=	'/redfish/v1/$metadata#ServiceRoot';
-						'@odata.id'			=	'/redfish/v1';
-						RedfishVersion		=	'1.0.2';
-						Chassis				=	@{	'@odata.id'	=	'/redfish/v1/Chassis'			};
-						Systems				= 	@{  '@odata.id'	=	'/redfish/v1/Systems'			};		
-						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/StorageSystems'	};
-						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
-						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
-						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		}
-							   }
-		Return $ServicesRoot
-	}
-}
 
 function Get-SFStorageSystemRoot {
 	param(	

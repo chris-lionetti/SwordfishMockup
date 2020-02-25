@@ -5,7 +5,7 @@ process{
 	$Members=@()
 	$AccessControlMaps = ( Get-NSAccessControlRecord )
 	foreach ($Map in $AccessControlMaps)
-		{	$LocalMembers = @( @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id
+		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id
                                 }
                              )
 			$Members+=$localMembers

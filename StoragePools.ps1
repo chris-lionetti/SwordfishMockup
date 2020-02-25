@@ -5,7 +5,7 @@ process{
 	$Members=@()
 	$pools=( Get-NsPool )
 	foreach ($pool in $Pools)
-		{	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StoragePools/'+$Pool.name 
+		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+$Pool.name 
 							 }
 			$Members+=$localMembers
 		}
