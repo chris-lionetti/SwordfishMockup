@@ -32,9 +32,8 @@ process{
 		}
 	$PSRoot = [ordered]@{
 					'@odata.Copyright'		=	$SwordfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/LinesOfService/DataProtectionLinesOfService';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
-					'@odata.type'			=	'#DataProtectionLinesOfService_1_0_0.DataProtectionLinesOfService';
+					'@odata.type'			=	'#DataProtectionLinesOfService.v1_0_0.DataProtectionLinesOfService';
 					Name					=	'Nimble Protection Policies';
 					'Members@odata.count'	=	($PSs).count;
 					Members					=	@( $Members )
@@ -85,9 +84,9 @@ process{
 				{	$ReplicaLocation = $PS.upstream_partner					
 				}
 		} else 
-		{	$IsIsolated  = $True
-			$ReplicaType = 'Snapshot'
-			$ReplicaLocation = 'Local' 
+		{	$IsIsolated  = 		$True
+			$ReplicaType = 		'Snapshot'
+			$ReplicaLocation = 	'Local' 
 		}
 	$days = ($PS.days).split(',')
 	$BYDY='SU,MO,TU,WE,TH,FR,SA'
@@ -132,20 +131,18 @@ process{
 						}
 		}
 	$RepeatInterval='R'+$PS.num_retain
-	$PSG = [ordered]@{
-				'@odata.Copyright'    	= 	$SwordfishCopyright;
-				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystem/'+$NimbleSerial+'/LinesOfService/DataProtectionLineOfService';
-				'@odata.id'             =	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LinesOfSerice/DataProtectionLineOfService/'+($PS.id);
-				'@odata.type'           =	'#DataProtectionLineOfService.v1_2_0.DataProtectionLineOfService';
-				Id                      =   ($PS.id);
-				Name                    =	($PS.name);
-				Description             =	($PS.description);
-				IsIsolated				=	$IsIsolated;
-				ReplicaType				=	$ReplicaType;
-				ReplicaAccessLocation	=	$ReplicaLocation;
-				RecoveryTimeObjective	=	0
-				Schedule				=	$Schedule;
-				RecoveryPointObjective	=	$RPO;
+	$PSG = [ordered]@{	'@odata.Copyright'    	= 	$SwordfishCopyright;
+						'@odata.id'             =	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LinesOfSerice/DataProtectionLineOfService/'+($PS.id);
+						'@odata.type'           =	'#DataProtectionLineOfService.v1_2_0.DataProtectionLineOfService';
+						Id                      =   ($PS.id);
+						Name                    =	($PS.name);
+						Description             =	($PS.description);
+						IsIsolated				=	$IsIsolated;
+						ReplicaType				=	$ReplicaType;
+						ReplicaAccessLocation	=	$ReplicaLocation;
+						RecoveryTimeObjective	=	0
+						Schedule				=	$Schedule;
+						RecoveryPointObjective	=	$RPO;
 					}
 	Return $PSG 
 }

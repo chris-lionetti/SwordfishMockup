@@ -23,9 +23,8 @@ process{
 		}	
 	$EPRoot = [ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoints';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints';
-					'@odata.type'			=	'#EndpointsCollection_1_4_0.EndpointsCollection';
+					'@odata.type'			=	'#EndpointsCollection.v1_4_0.EndpointsCollection';
 					Name					=	'Nimble Endpoints Collection';
 					'Members@odata.count'	=	(($NetworkConfig.array_list).nic_list).count;
 					Members					=	$Members
@@ -40,9 +39,11 @@ param(	$EndpointName
 process{
 	$result1 = Get-SFEndpointTarget 	-EndpointName $EndpointName
 	$result2 = Get-SFEndpointInitiator 	-EndpointName $EndpointName
-	if ($result1)	{	return $result1 
+	if ($result1)	{	write-host 'Endpoint Target Found' 
+						return $result1 
 					} else 
-					{	return $result2
+					{	write-host 'Endpoint Host Found' 
+						return $result2
 					}
 }
 }
@@ -67,7 +68,6 @@ function Get-SFEndpointTarget {
 						}	
 					$EPRoot = [ordered]@{
 									'@Redfish.Copyright'	= 	$RedfishCopyright;
-									'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
 									'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
 									'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
 									Name					=	$configname+"_"+$EP.name;
@@ -93,7 +93,6 @@ process{
 	{	$Initiator = ( Get-NSInitiator -id $EndpointName -ErrorAction SilentlyContinue )
 		$EP = [ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#Endpoint/'+$NimbleSerial+'/Endpoint';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
 					'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
 					Name					=	$Initiator.label;

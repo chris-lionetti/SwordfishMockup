@@ -11,9 +11,8 @@ function Get-SFVolumeRoot {
 			}
 		$VolFolder =[ordered]@{	
 						'@Redfish.Copyright'	= 	$RedfishCopyright;
-						'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes';
 						'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
-						'@odata.type'			=	'#VolumesCollection_1_4_0.VolumesCollection';
+						'@odata.type'			=	'#VolumeCollection.VolumesCollection';
 						Name					=	'NimbleVolumeCollection';
 						'Members@odata.count'	=	$VolCount;
 						Members					=	$Members
@@ -23,7 +22,8 @@ function Get-SFVolumeRoot {
 }
 
 function Get-SFVolume {
-   param(	$VolumeName
+   param(	$VolumeName,
+			[switch]$Experimental=$false
 	    )
    process
    {$ProvidingPools=@()
@@ -40,9 +40,9 @@ function Get-SFVolume {
 			$VolStatus_health= 'Warning'	
 		}
 	if ( $Volume.Encryption_cipher -like 'none')
-		{	$Vol_Encryption = 'false'
+		{	$Vol_Encryption = $False
 		} else 
-		{	$Vol_Encryption = 'true'			
+		{	$Vol_Encryption = $True			
 		}
 	if ( $Volume.Thinly_Provisioned )
 		{	$Vol_ProvisioningPolicy = 'thin'
@@ -56,9 +56,8 @@ function Get-SFVolume {
 		}
 	$VolObj =[ordered]@{
 				'@Redfish.Copyright'		= 	$RedfishCopyright;
-				'@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$Volume.name;
-				'@odata.id'				=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$Volume.name;
-				'@odata.type'			=	'#Volumes_1_4_0.Volume';
+				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name;
+				'@odata.type'			=	'#Volume.v1_4_0.Volume';
 				Id						=	$Volume.id;
 				Name					=	$Volume.name;
 				Description				=	$Volume.description;
@@ -74,7 +73,7 @@ function Get-SFVolume {
 				Encrypted				=	$Vol_Encryption;
 				EncryptionTypes			=	'ControllerAssisted';
 				ProvisioningPolicy		=	$Vol_ProvisioningPolicy;
-				Compressed				=	'true';
+				Compressed				=	$True;
 				Deduplicated			=	$Volume.dedupe_enabled;
 				DisplayName				=	$Volume.Full_name;
 				LowSpaceWarningThresholdPercents =	$Volume.warn_level;
@@ -111,7 +110,7 @@ function Get-SFVolume {
 												 };
 											 )			
 				}
-	if ( (get-nssnapshot -vol_name $VolumeName) )
+	if ( (get-nssnapshot -vol_name $VolumeName) -and $Experimental )
 		{	$Snapss = @(	@{	'@odata.id'	=	'/redfish/v1/'+$NimbleSerial+'/Volumes/'+$VolumeName+'/Snapshots'
 							 }
 					   )

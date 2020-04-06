@@ -4,9 +4,8 @@ function Get-SFStorageSystemRoot {
 		 )
 	process{
 		$SSRoot=[ordered]@{	
-				'@odata.type'		=	'#StorageSystemCollection.1.1.0.StorageSystempCollection';
 				'@odata.Copyright'	=	$RedfishCopyright;
-				'@odata.context'	=	'/redfish/v1/$metadata#StorageSystem.StorageSystem';
+				'@odata.type'		=	'#StorageSystemCollection.StorageSystempCollection';
 				'@odata.id'			=	'/redfish/v1/StorageSystems';
 				Name				=	'Storage System Collection';
 				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
@@ -23,9 +22,8 @@ function Get-SFStorageSystem {
 	process{
 		$Array= Get-NSArray
 		$SSA=[ordered]@{
-				'@odata.type'				=	'#StorageSystemCollection.1.0.0.StorageSystemCollection';
 				'@odata.Copyright'			=	$RedfishCopyright;
-				'@odata.context'			=	'/redfish/v1/$metadata#StorageSystem.StorageSystem'+$NimbleSerial;
+				'@odata.type'				=	'#StorageSystem.v1_0_0.StorageSystem';
 				'@odata.id'					=	'/redfish/v1/StorageSystems/'+$NimbleSerial;
 				Name						=	$Array.name;
 				Id							=	$Array.id;

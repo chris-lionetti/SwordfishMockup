@@ -3,9 +3,8 @@ function Get-SFEventServiceRoot {
     process{
         $EventRoot = [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#EventService.EventService';
                         '@odata.id'				=	'/redfish/v1/EventService';
-                        '@odata.type'			=	'#EventService.v1_0_0.EventService';
+                        '@odata.type'			=	'#EventService.v1_6_0.EventService';
                         Name					=   'Event Service';
                         Id                      =   'Event Service';
                         ServiceEnabled          =   'True';
@@ -30,12 +29,11 @@ function Get-SFEventCol {
             }
         $EventCol = [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#Event.Event';
                         '@odata.id'				=	'/redfish/v1/EventService/Event';
-                        '@odata.type'			=	'#Event.Event';
+                        '@odata.type'			=	'#EventCollection.EventCollection';
                         Name					=   'Event Collection';
                         Id                      =   'Event Collection';
-                        Events                  =   $Members
+                        Members                  =   $Members
                              }
         if ( $Events )  { return $EventCol 
                         } else 
@@ -51,9 +49,8 @@ function Get-SFEvent {
         $event= ( Get-NSEvent -id $EventId )
         if (Get-NSEvent -id $EventId)
             {   $Event =  [ordered]@{   '@Redfish.Copyright'	= 	$RedfishCopyright;
-                                        '@odata.context'		=	'/redfish/v1/$metadata#Event.Event';
                                         '@odata.id'				=	'/redfish/v1/EventService/Event/'+$event.id;
-                                        '@odata.type'			=	'#Event.Event';
+                                        '@odata.type'			=	'#Event.v1.4.2.Event';
                                         Name					=   'Event Array';
                                         Id                      =   $event.id;
                                         Events                  =   @{  EventType   =   $event.category;

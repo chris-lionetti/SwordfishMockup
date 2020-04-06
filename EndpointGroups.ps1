@@ -22,9 +22,8 @@ function Get-SFEndpointGroupRoot {
 		}
 	$EPGRoot = [ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroups';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups';
-					'@odata.type'			=	'#EndpointGroups_1_4_0.EndpointGroups';
+					'@odata.type'			=	'#EndpointGroupCollection.EndpointGroupCollection';
 					Name					=	'Nimble Endpoint Groups';
 					'Members@odata.count'	=	($Members).count;
 					Members					=	@( $Members )
@@ -63,19 +62,17 @@ function Get-SFInitiatorEndpointGroup {
 			{	if($Map.Initiator_Group_id -like $InitG.id)
 				{	$StorGP+=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id	
 			}	}			 }		
-		$EPG = [ordered]@{
-					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroup';
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$InitG.name;
-					'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
-					Name					=	$InitG.name;
-					Description				=	'Initiator EndpointGroup for '+$InitG.name;
-					GroupType				=	"client";
-					'Endpoints@odata.count'	=	$InitEP.count;
-					'StorageGroups@odata.count'	=	$StorGP.count	
-					Endpoints				=	@( $InitEP );
-					StorageGroups			=	@( $StorGP );
-				}
+		$EPG = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$InitG.name;
+							'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
+							Name					=	$InitG.name;
+							Description				=	'Initiator EndpointGroup for '+$InitG.name;
+							GroupType				=	"client";
+							'Endpoints@odata.count'	=	$InitEP.count;
+							'StorageGroups@odata.count'	=	$StorGP.count	
+							Endpoints				=	@( $InitEP );
+							StorageGroups			=	@( $StorGP );
+						}
 	return $EPG
 }
 
@@ -109,20 +106,18 @@ function Get-SFTargetEndpointGroup {
 								$StorGP+=@{'@odata.id'	= 	'/redfish/v1/StorageServices/'+$NimbleSerial+'/StorageGroups/'+$map.id
 										  }
 		}	}		}	}	}
-		$EPG = [ordered]@{
-					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroup/'+$NimbleSerial+'/EndpointGroup';
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name;
-					'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
-					Name					=	$sub.name;
-					id						=	$sub.id
-					Description				=	'Target EndpointGroup for subnet named '+$sub.name;
-					GroupType				=	"server";
-					'Endpoints@odata.count'	=	$TargEP.count;
-					'StorageGroups@odata.count'	=	$StorGP.count	
-					Endpoints				=	@( $TargEP );
-					StorageGroups			=	@( $StorGP );
-				}
+		$EPG = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name;
+							'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
+							Name					=	$sub.name;
+							id						=	$sub.id
+							Description				=	'Target EndpointGroup for subnet named '+$sub.name;
+							GroupType				=	"server";
+							'Endpoints@odata.count'	=	$TargEP.count;
+							'StorageGroups@odata.count'	=	$StorGP.count	
+							Endpoints				=	@( $TargEP );
+							StorageGroups			=	@( $StorGP );
+						}
 		if ( $Sub.name -like $EndpointGroupName )
 				{	return $EPG
 				}
@@ -146,19 +141,17 @@ function Get-SFTargetEndpointGroup {
 	{	$TargEPG+=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name
 				   }
 	}
-	$EPG = [ordered]@{
-				'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.context'		=	'/redfish/v1/$metadata#EndpointGroupCollection/'+$NimbleSerial+'/EndpointGroup';
-				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets';
-				'@odata.type'			=	'#EndpointGroupCollection.v1_3_1.EndpointGroupCollection';
-				Name					=	$NimbleSerial+'_AllSubnets';
-				Description				=	'Target Group Default, collection of all Target Endpoint Groups';
-				GroupType				=	"server";
-				'members@odata.count'	=	$TargEPG.count;
-				'StorageGroups@odata.count'	=	$StorGP.count	
-				Members					=	@( $TargEPG );
-				StorageGroups			=	@( $StorGP );
-			}
+	$EPG = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+						'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets';
+						'@odata.type'			=	'#EndpointGroupCollection.v1_3_1.EndpointGroupCollection';
+						Name					=	$NimbleSerial+'_AllSubnets';
+						Description				=	'Target Group Default, collection of all Target Endpoint Groups';
+						GroupType				=	"server";
+						'members@odata.count'	=	$TargEPG.count;
+						'StorageGroups@odata.count'	=	$StorGP.count	
+						Members					=	@( $TargEPG );
+						StorageGroups			=	@( $StorGP );
+					 }
 	if ( ($NimbleSerial+'_AllSubnets') -like $EndpointGroupName )
 		{	return $EPG
 		}

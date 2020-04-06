@@ -30,11 +30,11 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\StorageSystems.ps1
 . .\AccountService.ps1
 . .\Systems.ps1
-. .\Volumes.ps1
 . .\Snapshots.ps1
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
 . .\EventService.ps1
+. .\Volumes.ps1
 
 # Only need to change the above folder.
 if ( -not ( test-path $MyMockupDir -pathtype container ) )
@@ -302,13 +302,11 @@ function WriteA-File
             $Split=$PathRaw.split('/')
             $MyVolSplit=$Split[$Split.count-1]   # Get the last drive name from the item
             write-verbose "The path is $MyVolPath and the Volume is $MyVolSplit"
-            $Data = ( Get-SFVolume $MyVolSplit | convertTo-JSON -depth 10) 
+            $Data = ( Get-SFVolume $MyVolSplit -Experimental $True | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $MyVolPath
 
-            <#
             # Snapshots
-            $Data= ( Get-SFVolume $MyVolSplit)
-            
+            $Data= ( Get-SFVolume $MyVolSplit -Experimental $True)
             if ( $Data.Snapshots )
             {   $Data= ( Get-SFSnapshotIndex $MyVolSplit | ConvertTo-JSON -depth 10 )
                 WriteA-File -FileData $Data -Folder ($MyVolPath+'\snapshots')
@@ -326,7 +324,6 @@ function WriteA-File
                 }
 
             }
-            #>
 
         }
 

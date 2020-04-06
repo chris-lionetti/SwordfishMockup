@@ -11,9 +11,8 @@ process{
 		}
 	$PoolFolder =[ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools';
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
-					'@odata.type'			=	'#StoragePoolsCollection_1_0_0.StoragePoolsCollection';
+					'@odata.type'			=	'#StoragePoolCollection.StoragePoolCollection';
 					Name					=	'NimblePoolCollection';
 					'Members@odata.count'	=	$Pools.count;
 					Members					=	$Members
@@ -44,9 +43,8 @@ process{
 	$CapacitySources=@{}
 	$PoolObj =[ordered]@{
 				'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.context'		=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
-				'@odata.id'				=	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
-				'@odata.type'			=	'#StoragePool_1_0_0.StoragePool';
+				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
+				'@odata.type'			=	'#StoragePool.v1_0_0.StoragePool';
 				Id						=	($Pool.id);
 				Name					=	($Pool.name);
 				Description				=	($Pool.description);
@@ -66,9 +64,9 @@ process{
 																			  }
 												 }
 											 );
-				Compressed				=	'true';
+				Compressed				=	$True;
 				Deduplicated			=	($Pool.dedupe_capable);
-				Encryption				=	'true'	
+				Encryption				=	$True;	
 				SupportedRAIDTypes		=	'RAID6TP'
 			   }
 	return $PoolObj 

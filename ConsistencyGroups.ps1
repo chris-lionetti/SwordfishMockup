@@ -9,14 +9,12 @@ process{
                              )
 			$Members+=$localMembers
 		}
-	$CGRoot = [ordered]@{
-					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#ConsistencyGroup/'+$NimbleSerial+'/ConsistencyGroups';
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups';
-					'@odata.type'			=	'#ConsistencyGroup.v1_0_1.ConsistencyGroup';
-					Name					=	'Nimble Volume Collection (Consistency Groups)';
-					'Members@odata.count'	=	($VolCols).count;
-					Members					=	@( $Members )
+	$CGRoot = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups';
+							'@odata.type'			=	'#ConsistencyGroup.v1_0_1.ConsistencyGroup';
+							Name					=	'Nimble Volume Collection (Consistency Groups)';
+							'Members@odata.count'	=	($VolCols).count;
+							Members					=	@( $Members )
 			   		   }
 	return $CGRoot
 }
@@ -54,7 +52,6 @@ process{
 	$CG=@()
     $CG = [ordered]@{
 				'@Redfish.Copyright'    = 	$RedfishCopyright;
-				'@odata.context'        =	'/redfish/v1/$metadata#StorageSystems/'+$NimbleSerial+'/ConsistencyGroup';
 				'@odata.id'             =	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups/'+($VolCol.Name);
 				'@odata.type'           =	'#ConsistencyGroup.v1_0_1.ConsistencyGroup';
 				Name                    =	($VolCol.name);

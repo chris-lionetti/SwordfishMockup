@@ -11,9 +11,8 @@ function Get-SFSnapshotIndex{
                 $Snapcount+=1
             }
         $SnapColObj=[ordered]@{	    '@Redfish.Copyright'	= 	$RedfishCopyright;
-                                    '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
                                     '@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
-                                    '@odata.type'			=	'#SnapshotsCollection_1_0_0.SnapshotsCollection';
+                                    '@odata.type'			=	'#SnapshotsCollection.v1_0_0.SnapshotsCollection';
                                     Name					=	'NimbleSnapshotCollection';
                                     'Members@odata.count'	=	$SnapCount;
                                     Members					=	$SnapIndex		
@@ -27,8 +26,8 @@ function Get-SFSnapshot {
             $SnapId
          )
     process
-    {   $Volume = Get-NSVolume -Name $VolName
-        $ProvidingVol = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+    {   $Volume = (Get-NSVolume -Name $VolName)
+        $ProvidingVol = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
                          }
         if ( $Volume.Encryption_cipher -like 'none')
             {	$Vol_Encryption = 'false'
@@ -40,7 +39,8 @@ function Get-SFSnapshot {
             } else 	
             {	$Vol_CachePolicy = 'off'
             }
-        $Snapshot = ( Get-NSSnapshot -Vol_Name $VolName -id $SnapId )
+        $VolID=$Volume.id
+        $Snapshot = ( Get-NSSnapshot -Vol_Name $VolName | where { $_.id -eq $SnapId } )
         if ( $Snapshot.online)
             {	$SnapStatus_state = 'Enabled'
                 $SnapStatus_Health= 'OK'
@@ -50,9 +50,8 @@ function Get-SFSnapshot {
             }
         $SnapObj = [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#Volumes/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
                         '@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
-                        '@odata.type'			=	'#Volumes_1_4_0.Volume';
+                        '@odata.type'			=	'#Volume.v1_4_0.Volume';
                         Id						=	$Snapshot.id;
                         Name					=	$Snapshot.name;
                         Description				=	$Snapshot.description;

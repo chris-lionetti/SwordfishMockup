@@ -3,9 +3,8 @@ function Get-SFAccountServiceRoot {
     process{
         $AccountRoot =[ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#AccountService.AccountService';
                         '@odata.id'				=	'/redfish/v1/AccountService';
-                        '@odata.type'			=	'#AccountService.AccountService';
+                        '@odata.type'			=	'#AccountService.v1_7_0.AccountService';
                         Name					=   'Account Service';
                         Accounts				=	@{  '@odata.id' =   '/redfish/v1/AccountService/Accounts'   };
                         Roles				    =	@{  '@odata.id' =   '/redfish/v1/AccountService/Roles'      };
@@ -27,7 +26,6 @@ function Get-SFAccountCol {
         
         $AccountCol =[ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection';
                         '@odata.id'				=	'/redfish/v1/AccountService/Accounts';
                         '@odata.type'			=	'#ManagerAccountCollection.ManagerAccountCollection';
                         Name					=   'Account Collection';
@@ -53,11 +51,10 @@ function Get-SFAccount {
             }
         $Account =  [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#ManagerAccount.ManagerAccount';
                         '@odata.id'				=	'/redfish/v1/AccountService/Accounts/'+$AccountName;
-                        '@odata.type'			=	'#ManagerAccount.ManagerAccount';
+                        '@odata.type'			=	'#ManagerAccount.v1_5_0.ManagerAccount';
                         Name					=   $user.full_name;
-                        Username                =   $AccountName;
+                        UserName                =   $AccountName;
                         Id                      =   $user.id;
                         Description             =   $user.description;
                         RoleId                  =   $user.role;
@@ -79,7 +76,6 @@ function Get-SFAccountRoleCol {
     process{
         $RolesCol =  [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#RoleCollection.RoleCollection';
                         '@odata.id'				=	'/redfish/v1/AccountService/Roles';
                         '@odata.type'			=	'#RoleCollection.RoleCollection';
                         Name					=   'Roles Collection';
@@ -118,14 +114,13 @@ function Get-SFAccountRole {
         $RoleId=(get-nsuser | where { $_.role -like $RoleName } | select role_id -last 1 ).role_id
         $Role =  [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.context'		=	'/redfish/v1/$metadata#Role.Role';
                         '@odata.id'				=	'/redfish/v1/AccountService/Roles/'+$RoleName;
                         '@odata.type'           =   '#Role.v1_1_0.Role';
                         Name					=   $RoleName;
-                        IsPredefined            =   'True';
-                        Id                      =   $RoleId;
+                        IsPredefined            =   $True;
+                        Id                      =   $RoleName;
                         Description             =   $Description;
-                        RoleId                  =   $RoleId;
+                        RoleId                  =   $RoleName;
                         AssignedPrivileges      =   $asspriv
                       }
         return $Role

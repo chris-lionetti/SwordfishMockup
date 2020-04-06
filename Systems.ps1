@@ -13,9 +13,8 @@ function Get-SFRedfishRoot {
 	     )
 	process{
 		$ServicesRoot=[ordered]@{
-						'@odata.type'		=	'#ServiceRoot.v1_3_0.ServiceRoot';
 						'@odata.Copyright'	=	$RedfishCopyright;
-						'@odata.context'	=	'/redfish/v1/$metadata#ServiceRoot';
+						'@odata.type'		=	'#ServiceRoot.v1_3_0.ServiceRoot';
 						'@odata.id'			=	'/redfish/v1';
 						RedfishVersion		=	'1.0.2';
 						id					=	"RootService";
@@ -35,9 +34,8 @@ function Get-SFSystemRoot {
 	param()
 	process{
 		$SRoot=[ordered]@{
-				'@odata.type'		=	'#ComputerSystemCollection.ComputerSystemCollection';
 				'@odata.Copyright'	=	$RedfishCopyright;
-				'@odata.context'	=	'/redfish/v1/$metadata#Systems';
+				'@odata.type'		=	'#ComputerSystemCollection.ComputerSystemCollection';
 				'@odata.id'			=	'/redfish/v1/Systems';
                 Name				=	'Computer System Collection';
                 'Members@odata.count'=	1;                

@@ -7,20 +7,19 @@ process{
 	$DrivesObj=@()
 	foreach ($disk in $disks)
 		{	if ($Shelf.serial -like $disk.shelf_serial )
-			{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
+			{	$localDiskname="DiskShelf"+$($disk.vshelf_id)+"Location"+$($disk.slot)
 				$DriveObj=@{ '@odata.id'	= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Drives/"+$localDiskname
 						   }
 				$DrivesObj+=$DriveObj
 			}
 		}
-	$Drives=@{	'@odata.type'			= 	"#Drive.1.6.0.Drive";
-				'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.context'		= 	'/redfish/v1/$metadata#Chassis/Members/'+$Shelf.serial+'/Drives';
-				'@odata.id'				= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Drives";
-				Id						= 	"Drives";
-				Name					= 	"HPENimbleDrives";
-				Drives					=	$DrivesObj;
-			 }
+	$Drives=[ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+						'@odata.type'			= 	"#DriveCollection.DriveCollection";
+						'@odata.id'				= 	"/redfish/v1/Chassis/"+$Shelf.serial+"/Drives";
+						Id						= 	"Drives";
+						Name					= 	"HPENimbleDrives";
+						Members					=	$DrivesObj;
+			 		  }
 	if ($Shelf) 
 		{	return $Drives
 		}
@@ -34,50 +33,50 @@ param(	$diskname,
 process{
 	$result = ""
 	$DriveObj=@{}
-	write-host "DiskName = $diskname"
-	write-host "ShelfSer = $ShelfSer"
+	write-verbose "DiskName = $diskname"
+	write-verbose "ShelfSer = $ShelfSer"
 	$Shelf = ( Get-nsShelf | where { $_.serial -like $ShelfSer } )
 	foreach ( $rawdisk in Get-NSDisk )
-	{	$Loc = "Disk.Shelf_"+$($rawdisk.vshelf_id)+".Location_"+$($rawdisk.slot)
+	{	$Loc = "DiskShelf"+$($rawdisk.vshelf_id)+"Location"+$($rawdisk.slot)
 		if ($diskname -like $Loc)
 		{	$disk = $rawdisk
 		}
 	}
 	if ($Shelf.serial -like $disk.shelf_serial )
-		{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
+		{	$localDiskname="DiskShelf"+$($disk.vshelf_id)+"Location"+$($disk.slot)
 			if ( $disk.state -eq "in use")
 				{	$LocalLED="Lit"	
 				} else
 				{	$LocalLED="Off"
 				}
-			$DriveObj=@{ 	'@Redfish.Copyright'	= 	$RedfishCopyright;
-						 	'@odata.id'				= 	"/redfish/v1/Chassis/"+$Shelf.Serial+"/Drives/"+$localDiskname;
-						 	'@odata.type'			= 	"#Drive.1.6.0.Drive";
-						 	'@odata.context'		= 	'/redfish/v1/$metadata#Chassis/Members/'+$Shelf.serial+'/Drives/Members/$entity';
-						 	Id						= 	$disk.id;
-						 	Name					= 	"HPENimbleDrives";
-						 	IndicatorLED			=	$LocalLED;
-						 	Model					=	$disk.model;
-						 	Revision				=	$disk.firmware_version;
-						 	Status					=	@{	State	=	$disk.state;
-															Health 	=	$disk.raid_state
-							 							 };
-							 CapacityBytes			=	$disk.size;
-							 FailurePredicted		=	$disk.raid_state;
-							 Protocol				=	"SAS";
-							 MediaType				=	$disk.type;
-							 Manufacturer			=	$disk.vendor;
-							 SerialNumber			=	$disk.serial;
-							 PartNumber				=	$disk.vendor+"_"+$disk.model;	
-							 Identifiers			= 	@(	@{	DurableNameFormat	=	"NimbleID";
-																DurableName			=	$disk.id
-															 }
-							 							 );
-						 	AssetTag				=	$disk.serial;
-							CapableSpeedGbs			=	6;
-							NegotiatedSpeedGbs		=	6
-					   }
+			$DriveObj=[ordered]@{ 	'@Redfish.Copyright'	= 	$RedfishCopyright;
+						 			'@odata.id'				= 	"/redfish/v1/Chassis/"+$Shelf.Serial+"/Drives/"+$localDiskname;
+						 			'@odata.type'			= 	"#Drive.v1_6_0.Drive";
+						 			Id						= 	$disk.id;
+								 	Name					= 	"HPENimbleDrives";
+						 			IndicatorLED			=	$LocalLED;
+						 			Model					=	$disk.model;
+						 			Revision				=	$disk.firmware_version;
+						 			Status					=	@{	State	=	$disk.state;
+																	Health 	=	$disk.raid_state
+									 							 };
+									CapacityBytes			=	$disk.size;
+							 		FailurePredicted		=	$disk.raid_state;
+							 		Protocol				=	"SAS";
+							 		MediaType				=	$disk.type;
+							 		Manufacturer			=	$disk.vendor;
+							 		SerialNumber			=	$disk.serial;
+							 		PartNumber				=	$disk.vendor+"_"+$disk.model;	 
+						 	 		AssetTag				=	$disk.serial;
+							 		CapableSpeedGbs			=	6;
+							 		NegotiatedSpeedGbs		=	6
+					   			}
 		}
 	return $DriveObj
 }
 }
+
+#Identifiers			= 	@(	@{	DurableNameFormat	=	"NimbleID";
+#DurableName			=	$disk.id
+#}
+#);
