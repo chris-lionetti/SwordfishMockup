@@ -58,7 +58,6 @@ function Get-SFAccount {
                         Id                      =   $user.id;
                         Description             =   $user.description;
                         RoleId                  =   $user.role;
-                        Status                  =   $Status;
                         Links                    =  @{  Role = @{  '@odata.id' =   '/redfish/v1/AccountService/Roles/'+($user.role)
                                                                 }
                                                      }
@@ -115,7 +114,7 @@ function Get-SFAccountRole {
         $Role =  [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.id'				=	'/redfish/v1/AccountService/Roles/'+$RoleName;
-                        '@odata.type'           =   '#Role.v1_1_0.Role';
+                        '@odata.type'           =   '#Role.v1_2_4.Role';
                         Name					=   $RoleName;
                         IsPredefined            =   $True;
                         Id                      =   $RoleName;

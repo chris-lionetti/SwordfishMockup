@@ -17,7 +17,7 @@ function Get-SFRedfishRoot {
 						'@odata.type'		=	'#ServiceRoot.v1_3_0.ServiceRoot';
 						'@odata.id'			=	'/redfish/v1';
 						RedfishVersion		=	'1.0.2';
-						id					=	"RootService";
+						Id					=	"RootService";
 						Name				=	"Root Service";
 						Chassis				=	@{	'@odata.id'	=	'/redfish/v1/Chassis'			};
 						Systems				= 	@{  '@odata.id'	=	'/redfish/v1/Systems'			};		

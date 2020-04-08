@@ -64,7 +64,7 @@ function Get-SFInitiatorEndpointGroup {
 			}	}			 }		
 		$EPG = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$InitG.name;
-							'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
+							'@odata.type'			=	'#EndpointGroup.v1_2_0.EndpointGroup';
 							Name					=	$InitG.name;
 							Description				=	'Initiator EndpointGroup for '+$InitG.name;
 							GroupType				=	"client";
@@ -108,7 +108,7 @@ function Get-SFTargetEndpointGroup {
 		}	}		}	}	}
 		$EPG = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$sub.name;
-							'@odata.type'			=	'#EndpointGroup.v1_3_1.EndpointGroup';
+							'@odata.type'			=	'#EndpointGroup.v1_2_0.EndpointGroup';
 							Name					=	$sub.name;
 							id						=	$sub.id
 							Description				=	'Target EndpointGroup for subnet named '+$sub.name;
@@ -143,7 +143,7 @@ function Get-SFTargetEndpointGroup {
 	}
 	$EPG = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 						'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets';
-						'@odata.type'			=	'#EndpointGroupCollection.v1_3_1.EndpointGroupCollection';
+						'@odata.type'			=	'#EndpointGroup.v1.2.0.EndpointGroup';
 						Name					=	$NimbleSerial+'_AllSubnets';
 						Description				=	'Target Group Default, collection of all Target Endpoint Groups';
 						GroupType				=	"server";

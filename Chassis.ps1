@@ -11,8 +11,9 @@ function Get-SFChassisRoot {
 							'@odata.type'			=	"#ChassisCollection.ChassisCollection";
 							'@odata.id'				=	'/redfish/v1/Chassis'
 							Name					=	"Chassis Collection";
-							'Members@odata.count' 	= 	($Shelfs.count) ;
-							Members		 			=	$Members ;
+							'Members@odata.count' 	= 	($Shelfs).count ;
+							Members		 			=	@( $Members 
+														 );
 					   }
 	return $Chassis	
 }
@@ -23,14 +24,14 @@ param(	$ShelfName
 process
 {	$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
 	if ( ($shelf.psu_overall_status -like "OK") -and ($shelf.fan_overall_status -like "OK") -and ($shelf.temp_overall_status -like "OK") )
-		{ 	$NimbleShelfLED="OK" 	} else 
-		{	$NimbleShelfLED="Fault"	}
+		{ 	$NimbleShelfLED="Lit" 	} else 
+		{	$NimbleShelfLED="Off"	}
 	$ShelfObj=[ordered]@{	"@Redfish.Copyright" 	= $RedfishCopyright;
 							"@odata.id"				= "/redfish/v1/Chassis/"+($Shelf.serial);
 							"@odata.type"			= "#Chassis.v1_0_0.Chassis";
 							Id						= ($Shelf.id);
 							Name					= ($Shelf.serial);
-							ChassisType				= ($Shelf.chassis_type);
+							ChassisType				= "Shelf";
 							Manufacturer			= "HPE-Nimble";
 							Model					= ($Shelf.model);
 							SKU						= ($Shelf.model_ext);
@@ -87,12 +88,13 @@ process{
 							'@odata.id'				= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power";
 							Id						= 	($Shelf.ID);
 							Name					= 	"NimbleShelfPower";
-							PowerControl			= 	@{	'@odata.id'	= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power#/PowerControl/0";
-															MemberID	= 	0;
-															Status 		= 	@{	State	=	$NimbleShelfEnabled;
-																				Health	=	$NimbleShelfPowerStatus
-															 				 }
-									   		     		 };
+							PowerControl			= 	@( 	@{	'@odata.id'	= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power#/PowerControl/0";
+																MemberID	= 	0;
+																Status 		= 	@{	State	=	$NimbleShelfEnabled;
+																					Health	=	$NimbleShelfPowerStatus
+															 					 }
+															};
+														 )
 							PowerSupplies			= 	$PowerSupplyObj
 			   			}
 	if ($Shelf)

@@ -18,8 +18,7 @@ The command is broken into subcommands that are stored in difference files to ma
 # To create a Mockup.
 Modify the first few lines of the MockupCreator.ps1 file to set your Mockup folder root, as well as your array IP Address and password.
 Once set, you can issue the .\MockupCreator.ps1 command
-# Experimentation
-There also now exists a command used to create a mockup and add the experimental Snapshots option where snapshots are listed as collections under Volumes that they are composed from. To generate the Mockup which includes this new data structure, use the following command; .\MockupCreatorPlusSnapshots.ps1
+# Outstanding bugs.
  
 # Why the project name CatFish?
 Well, it needed to be tied to RedFish, Swordfish, *fish scheme. It also needed to represent a PowerShell module gathering real information from an actual Array, and re-representing that data in a Swordfish compatible way back to clients looking for actual Swordfish implementations. This kind of sounds like the internet dating phenomenon called 'catfishing'.

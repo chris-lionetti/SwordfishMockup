@@ -4,7 +4,7 @@ function Get-SFEventServiceRoot {
         $EventRoot = [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
                         '@odata.id'				=	'/redfish/v1/EventService';
-                        '@odata.type'			=	'#EventService.v1_6_0.EventService';
+                        '@odata.type'			=	'#EventService.v1_5_0.EventService';
                         Name					=   'Event Service';
                         Id                      =   'Event Service';
                         ServiceEnabled          =   'True';
@@ -33,7 +33,8 @@ function Get-SFEventCol {
                         '@odata.type'			=	'#EventCollection.EventCollection';
                         Name					=   'Event Collection';
                         Id                      =   'Event Collection';
-                        Members                  =   $Members
+                        Members                  =   @( $Members
+                                                      )
                              }
         if ( $Events )  { return $EventCol 
                         } else 

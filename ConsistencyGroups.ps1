@@ -11,7 +11,7 @@ process{
 		}
 	$CGRoot = [ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups';
-							'@odata.type'			=	'#ConsistencyGroup.v1_0_1.ConsistencyGroup';
+							'@odata.type'			=	'#ConsistencyGroupCollection.ConsistencyGroupCollection';
 							Name					=	'Nimble Volume Collection (Consistency Groups)';
 							'Members@odata.count'	=	($VolCols).count;
 							Members					=	@( $Members )
@@ -39,10 +39,10 @@ process{
 		{	$IsConsistent = $False			
 		}
 	switch($VolCol.app_sync)
-		{	'none'		{	$AppSync = "other"	}	
-			'vss'		{	$AppSync = "vss"	}
-			'vmware'	{	$AppSync = "vasa"	}
-			'generic'	{	$AppSync = "other"	}
+		{	'none'		{	$AppSync = "Other"	}	
+			'vss'		{	$AppSync = "VSS"	}
+			'vmware'	{	$AppSync = "VASA"	}
+			'generic'	{	$AppSync = "Other"	}
 		}
 	if ($VolCol.protection_type -like 'local')
 		{	$ReplicaType = 'snapshot' 
@@ -57,7 +57,6 @@ process{
 				Name                    =	($VolCol.name);
 				Id						=	($VolCol.id);
                 Description             =	'Volume Collection (used as a Consistency Group)';
-				'Volumes@odata.count'	=	($VolCol.volume_count);
 				ConsistencyMethod		=	($AppSync);
 				ConsistencyType			=	($VolCol.app_sync);
 				IsConsistent			=	($IsConsistent);

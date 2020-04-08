@@ -24,7 +24,7 @@ process{
 	$EPRoot = [ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints';
-					'@odata.type'			=	'#EndpointsCollection.v1_4_0.EndpointsCollection';
+					'@odata.type'			=	'#EndpointCollection.EndpointCollection';
 					Name					=	'Nimble Endpoints Collection';
 					'Members@odata.count'	=	(($NetworkConfig.array_list).nic_list).count;
 					Members					=	$Members
@@ -63,18 +63,24 @@ function Get-SFEndpointTarget {
 						{	$EPHealth = 'OK'
 							$EPState  = 'Enabled'
 						} else
-						{	$EPHealth = 'Degraded'
+						{	$EPHealth = 'Warning'
 							$EPState  = 'Disabled'
 						}	
 					$EPRoot = [ordered]@{
 									'@Redfish.Copyright'	= 	$RedfishCopyright;
 									'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
-									'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
+									'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 									Name					=	$configname+"_"+$EP.name;
-									EndpointRole			=	'Target';
+									ConnectedEntity			=	@{	EntityRole			=	'Target';
+																	EntityTpe			=	'NetworkController';
+
+																 };
 									Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
 									EndpointProtocol		=	'iSCSI';
-									IPv4Address				=	$EP.data_ip;
+									IPTransportDetails		=	@( 	@{	IPv4Address = 	@{	Address 	= 	$EP.data_ip
+																					 	 }
+																	 }
+																 );
 									Id						=	$EPid;
 									Status					=	@{	Health 	=	$EPHealth ;
 																	State 	= 	$EPState
@@ -89,31 +95,27 @@ function Get-SFEndpointInitiator {
 param( 	$EndpointName	
 	 )
 process{
-	if ( Test-SFID($EndpointName) )
-	{	$Initiator = ( Get-NSInitiator -id $EndpointName -ErrorAction SilentlyContinue )
-		$EP = [ordered]@{
-					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
-					'@odata.type'			=	'#Endpoint.v1_3_1.Endpoint';
-					Name					=	$Initiator.label;
-					EndpointRole			=	'Initiator';
-					Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
-					EndpointProtocol		=	'iSCSI';
-					IPv4Address				=	$Initiator.Ip_Address;
-					Id						=	$Initiator.id;
-					Identifiers				=	@(	@{	DurableNameFormat	=	'iqn';
-														DurableName			=	$Initiator.iqn
-													 };
-												@{	DurableNameFormat	=	'Nimble ID';
-														DurableName			=	$Initiator.id
-													 }
-												 )
-		   }
-		if ($Initiator)
+		$Initiator = ( Get-NSInitiator -id $EndpointName -ErrorAction SilentlyContinue )
+		$EP = [ordered]@{	
+							'@Redfish.Copyright'	= 	$RedfishCopyright;
+							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
+							'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
+							Name					=	$Initiator.label;
+							EndpointRole			=	'Initiator';
+							ConnectedEntity			=	@{	EntityRole			=	'Initiator';
+														 };
+							Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
+							EndpointProtocol		=	'iSCSI';
+							IPv4Address				=	$Initiator.Ip_Address;
+							Id						=	$Initiator.id;
+							Identifiers				=	@(	@{	DurableNameFormat	=	'iqn';
+																DurableName			=	$Initiator.iqn
+															 };
+														 )
+		  				}
+		if ( Get-NSInitiator -id $EndpointName )
 			{	return $EP
 			}
-	} else
-	{	return	
-	}
 }
 }
+
