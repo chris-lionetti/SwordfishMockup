@@ -39,6 +39,7 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
 . .\EventService.ps1
+. .\Fabrics.ps1
 $listener = New-Object System.Net.HttpListener      # Create the Listerer Object
 $listener.Prefixes.Add('http://+:5000/')            # Set the listener on port 5000
 $listener.Start()
@@ -79,11 +80,14 @@ while ($DontEndYet)
                 "Systems"         { $result = Get-SFSystemRoot                           | ConvertTo-JSON -Depth 10  } 
                 "AccountService"  { $result = Get-SFAccountServiceRoot                   | ConvertTo-JSON -Depth 10  }
                 "EventService"    { $result = Get-SFEventServiceRoot                     | ConvertTo-JSON -Depth 10  }
+                "Fabrics"         { $result = Get-SFFabricRoot                           | ConvertTo-JSON -Depth 10  }
+                
               }
           }
         7 { switch($rvar[5])                         # The request will look something like HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#
               { "Chassis"         { $Result = Get-SFChassis -ShelfName ($rvar[6])               | ConvertTo-JSON -Depth 10  }
                 "StorageSystems"  { $Result = Get-SFStorageSystem -ArrayName ($rvar[6])         | ConvertTo-JSON -Depth 10  }
+                "Fabrics"         { $Result = Get-SFFabric        -ArrayName ($rvar[6])         | ConvertTo-JSON -Depth 10  }
                 "AccountService"  { switch($rvar[6]) # And example of this would be HTTP://localhost:5000/redfish/v1/AccountService/Roles
                                         {   "Roles"     { $result = Get-SFAccountRoleCol        | ConvertTo-JSON -Depth 10  } 
                                             "Accounts"  { $result = Get-SFAccountCol            | ConvertTo-JSON -Depth 10  }
@@ -124,6 +128,13 @@ while ($DontEndYet)
                                           } 
                                       }
                                 }
+                "Fabrics"         { if ( (Get-NSArray).serial -like $rvar[6] )
+                                    { switch($rvar[7])
+                                        { "Endpoints"                     { $result = Get-SFEndpointRoot            | ConvertTo-JSON -Depth 10 }                   
+                                        } 
+                                    }
+                              }
+
               }
           }
         9 { switch($rvar[5])                      # This reqest will add a subquery under the individual serial name listed in the above request
@@ -132,8 +143,7 @@ while ($DontEndYet)
                                         }       
                                     }               # And example of this would be HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#/Volumes/VolumeID
                   "StorageSystems"  { switch($rvar[7])
-                                        { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
-                                          "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
+                                        { "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
                                           "Volumes"                     { $result = Get-SFVolume -VolumeName ($rvar[8])                | ConvertTo-JSON -Depth 10     }
                                           "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
                                           "StoragePools"                { $result = Get-SFPool -Poolname ($rvar[8])                    | ConvertTo-JSON -Depth 10     } 
@@ -143,6 +153,10 @@ while ($DontEndYet)
                                                                                       { $result = Get-SFDataProtectionLoSRoot          | ConvertTo-JSON -Depth 10     }
                                                                             }
                                                                         }                   
+                                        } 
+                                    }
+                  "Fabrics"  { switch($rvar[7])
+                                        { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
                                         } 
                                     }
                 }

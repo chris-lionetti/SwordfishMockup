@@ -33,7 +33,7 @@ function Get-SFStorageSystem {
 												};
 				Drives						=	'/redfish/v1/Chassis/'+$NimbleSerial+'/drives';
 				Chassis						=	'/redfish/v1/Chassis/'+$NimbleSerial;
-				Endpoints					=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints';
+				Endpoints					=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
 				EndpointGroups				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups';
 				ConsistencyGroups			=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups';
 				StorageGroups				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups';

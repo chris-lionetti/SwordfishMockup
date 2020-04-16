@@ -55,7 +55,7 @@ function Get-SFVolume {
 		{	$Vol_CachePolicy = 'off'
 		}
 	$VolObj =[ordered]@{
-				'@Redfish.Copyright'		= 	$RedfishCopyright;
+				'@Redfish.Copyright'	= 	$RedfishCopyright;
 				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name;
 				'@odata.type'			=	'#Volume.v1_4_0.Volume';
 				Id						=	$Volume.id;

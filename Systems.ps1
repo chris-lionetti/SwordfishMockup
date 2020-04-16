@@ -25,6 +25,7 @@ function Get-SFRedfishRoot {
 						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
 						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
 						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		}
+						Fabrics				=	@{	'@odata.id' =	'/redfish/v1/Fabrics'		}
 							   }
 		Return $ServicesRoot
 	}

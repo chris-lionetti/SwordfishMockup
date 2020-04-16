@@ -9,7 +9,7 @@ process{
 			$NL = $AL.Nic_list
 			foreach ( $EP in $NL)
 				{	$Endpointname=$configname+"_"+$EP.name
-					$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Endpointname 
+					$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$Endpointname 
 									 }
 					if ($configname -like 'Active')
 					{	$Members+=$localMembers
@@ -17,13 +17,13 @@ process{
 				}
 		}
 	foreach ( $Initiator in ( Get-NSInitiator ) )
-		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id 
+		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$Initiator.id 
 							 }
 			$Members+=$localMembers
 		}	
 	$EPRoot = [ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints';
+					'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
 					'@odata.type'			=	'#EndpointCollection.EndpointCollection';
 					Name					=	'Nimble Endpoints Collection';
 					'Members@odata.count'	=	(($NetworkConfig.array_list).nic_list).count;
@@ -68,7 +68,7 @@ function Get-SFEndpointTarget {
 						}	
 					$EPRoot = [ordered]@{
 									'@Redfish.Copyright'	= 	$RedfishCopyright;
-									'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
+									'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
 									'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 									Name					=	$configname+"_"+$EP.name;
 									ConnectedEntity			=	@{	EntityRole			=	'Target';
@@ -98,7 +98,7 @@ process{
 		$Initiator = ( Get-NSInitiator -id $EndpointName -ErrorAction SilentlyContinue )
 		$EP = [ordered]@{	
 							'@Redfish.Copyright'	= 	$RedfishCopyright;
-							'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
+							'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
 							'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 							Name					=	$Initiator.label;
 							EndpointRole			=	'Initiator';

@@ -35,6 +35,7 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry A
 . .\ConsistencyGroups.ps1
 . .\DataProtectionLoS.ps1
 . .\EventService.ps1
+. .\Fabrics.ps1
 
 # Only need to change the above folder.
 if ( -not ( test-path $MyMockupDir -pathtype container ) )
@@ -174,6 +175,37 @@ function WriteA-File
             $Data= ( Get-SFdrive -shelfser $SplitFull -DiskName $DSplitFull | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $PathDFull
 
+        }
+    }
+
+# Fabrics
+    $Data=( Get-SFFabricRoot | convertTo-JSON -depth 10) 
+    WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\Fabrics' )
+    $MyArrays = $(Get-SFFabricRoot).Members
+    foreach($MyArray in $MyArrays)
+    {   $PathRaw=$MyArray.'@odata.id'
+        $MyArrayPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+        $Split=$PathRaw.split('/')
+        $MyArraySerial=$Split[$Split.count-1]   # Get the last drive name from the item
+        write-host "The path is $MyArrayPath and the Serial is $MyArraySerial"
+        $Data= ( Get-SFFabric $MyArraySerial | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder $MyArrayPath
+    
+        # Endpoints
+        $Data= ( Get-SFEndpointRoot | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Endpoints' )
+  
+        $MyEndpoints= $(Get-SFEndpointRoot).Members
+        foreach($MyEndpoint in $MyEndpoints)
+        {   $PathRaw=$MyEndpoint.'@odata.id'
+            $MyEPPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+            $Split=$PathRaw.split('/')
+            $MyEP=$Split[$Split.count-1]   # Get the last drive name from the item
+            write-host "The path is $MyEPPath and the Endpoint is $MyEP"
+            $Data = ( Get-SFEndpoint $MyEP | convertTo-JSON -depth 10) 
+            Write-host "My EP is $MyEP "
+            Write-host "My Data is $Data "
+            WriteA-File -FileData $Data -Folder $MyEPPath
         }
     }
 
