@@ -5,13 +5,13 @@ function Get-SFSnapshotIndex{
     {   $SnapIndex=@()
         $Snapcount=0
         foreach ($snapshot in get-nssnapshot -vol_name $VolName)
-            {	$LocalMembers=@{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/SnapShots/'+$Snapshot.id
+            {	$LocalMembers=@{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$VolName+'/SnapShots/'+$Snapshot.id
                                }
                 $SnapIndex+=$LocalMembers
                 $Snapcount+=1
             }
         $SnapColObj=[ordered]@{	    '@Redfish.Copyright'	= 	$RedfishCopyright;
-                                    '@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
+                                    '@odata.id'				=	'/redfish/v1//Storage/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots';
                                     '@odata.type'			=	'#SnapshotsCollection.v1_0_0.SnapshotsCollection';
                                     Name					=	'NimbleSnapshotCollection';
                                     'Members@odata.count'	=	$SnapCount;
@@ -27,7 +27,7 @@ function Get-SFSnapshot {
          )
     process
     {   $Volume = (Get-NSVolume -Name $VolName)
-        $ProvidingVol = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+        $ProvidingVol = @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Volume.name 
                          }
         if ( $Volume.Encryption_cipher -like 'none')
             {	$Vol_Encryption = 'false'
@@ -50,7 +50,7 @@ function Get-SFSnapshot {
             }
         $SnapObj = [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
+                        '@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$VolName+'/Snapshots/'+$Snapshot.id;
                         '@odata.type'			=	'#Volume.v1_4_0.Volume';
                         Id						=	$Snapshot.id;
                         Name					=	$Snapshot.name;
@@ -104,7 +104,7 @@ function Get-SFSnapshot {
                                                      )				
                     }
         if ( $Volume.volcoll_name )
-            {   $VolColl= @{ ConsistencyGroup    =   '/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroup/'+$Volume.volcoll_name
+            {   $VolColl= @{ ConsistencyGroup    =   '/redfish/v1/Storage/'+$NimbleSerial+'/ConsistencyGroup/'+$Volume.volcoll_name
                            }
                 $SnapObj+=$VolColl
             }

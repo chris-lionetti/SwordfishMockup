@@ -71,8 +71,8 @@ function Get-SFEndpointTarget {
 									'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
 									'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 									Name					=	$configname+"_"+$EP.name;
-									ConnectedEntity			=	@{	EntityRole			=	'Target';
-																	EntityTpe			=	'NetworkController';
+									ConnectedEntities		=	@{	EntityRole			=	'Target';
+																	EntityType			=	'NetworkController';
 
 																 };
 									Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
@@ -102,7 +102,7 @@ process{
 							'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 							Name					=	$Initiator.label;
 							EndpointRole			=	'Initiator';
-							ConnectedEntity			=	@{	EntityRole			=	'Initiator';
+							ConnectedEntities		=	@{	EntityRole			=	'Initiator';
 														 };
 							Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
 							EndpointProtocol		=	'iSCSI';

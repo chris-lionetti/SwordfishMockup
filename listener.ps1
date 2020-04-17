@@ -76,7 +76,7 @@ while ($DontEndYet)
           }
         6 { switch($rvar[5])                        # The Request has start Redfish/v1, but then must contain the following as the last element of the request
               { "Chassis"         { $result = Get-SFChassisRoot                          | ConvertTo-JSON -Depth 10  }
-                "StorageSystems"  { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  }
+                "Storage"         { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  }
                 "Systems"         { $result = Get-SFSystemRoot                           | ConvertTo-JSON -Depth 10  } 
                 "AccountService"  { $result = Get-SFAccountServiceRoot                   | ConvertTo-JSON -Depth 10  }
                 "EventService"    { $result = Get-SFEventServiceRoot                     | ConvertTo-JSON -Depth 10  }
@@ -86,7 +86,7 @@ while ($DontEndYet)
           }
         7 { switch($rvar[5])                         # The request will look something like HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#
               { "Chassis"         { $Result = Get-SFChassis -ShelfName ($rvar[6])               | ConvertTo-JSON -Depth 10  }
-                "StorageSystems"  { $Result = Get-SFStorageSystem -ArrayName ($rvar[6])         | ConvertTo-JSON -Depth 10  }
+                "Storage"         { $Result = Get-SFStorageSystem -ArrayName ($rvar[6])         | ConvertTo-JSON -Depth 10  }
                 "Fabrics"         { $Result = Get-SFFabric        -ArrayName ($rvar[6])         | ConvertTo-JSON -Depth 10  }
                 "AccountService"  { switch($rvar[6]) # And example of this would be HTTP://localhost:5000/redfish/v1/AccountService/Roles
                                         {   "Roles"     { $result = Get-SFAccountRoleCol        | ConvertTo-JSON -Depth 10  } 
@@ -115,10 +115,9 @@ while ($DontEndYet)
                                       { "Events"    { $result = Get-SFEvent -EventId ($rvar[7])              | ConvertTo-JSON -depth 10 }
                                       }
                                   }
-                "StorageSystems"  { if ( (Get-NSArray).serial -like $rvar[6] )
+                "Storage"         { if ( (Get-NSArray).serial -like $rvar[6] )
                                       { switch($rvar[7])
-                                          { "Endpoints"                     { $result = Get-SFEndpointRoot            | ConvertTo-JSON -Depth 10 }
-                                            "EndpointGroups"                { $result = Get-SFEndpointGroupRoot       | ConvertTo-JSON -Depth 10 }
+                                          { "EndpointGroups"                { $result = Get-SFEndpointGroupRoot       | ConvertTo-JSON -Depth 10 }
                                             "Volumes"                       { $result = Get-SFVolumeRoot              | ConvertTo-JSON -Depth 10 }
                                             "StorageGroups"                 { $result = Get-SFStorageGroupRoot        | ConvertTo-JSON -Depth 10 }
                                             "StoragePools"                  { $result = Get-SFPoolRoot                | ConvertTo-JSON -Depth 10 }
@@ -142,7 +141,7 @@ while ($DontEndYet)
                                         { "Drives"                   { $result = Get-SFDrive -shelfser ($rvar[6]) -diskname ($rvar[8]) | ConvertTo-JSON -Depth 10     }
                                         }       
                                     }               # And example of this would be HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#/Volumes/VolumeID
-                  "StorageSystems"  { switch($rvar[7])
+                  "Storage"         { switch($rvar[7])
                                         { "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
                                           "Volumes"                     { $result = Get-SFVolume -VolumeName ($rvar[8])                | ConvertTo-JSON -Depth 10     }
                                           "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
@@ -162,7 +161,7 @@ while ($DontEndYet)
                 }
             }
         10{ switch($rvar[5])
-              { "StorageSystems"  { switch($rvar[7])
+              { "Storage"    { switch($rvar[7])
                                     { "Volumes"         { switch($rvar[9])
                                                             { "Snapshots"   { $result = Get-SFSnapshotIndex -VolName ($rvar[8])            | ConvertTo-JSON -depth 10 }
                                                             }
@@ -177,7 +176,7 @@ while ($DontEndYet)
               }    
           }
         11{ switch($rvar[5])
-            { "StorageSystems"  { switch($rvar[7])
+            { "Storage"      { switch($rvar[7])
                                   { "Volumes"     { switch($rvar[9])
                                                       { "Snapshots"   { $result = Get-SFSnapshot -VolName ($rvar[8]) -SnapId ($rvar[10]) | ConvertTo-JSON -depth 10      }
                                                       }

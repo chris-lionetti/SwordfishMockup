@@ -31,7 +31,12 @@ function Get-SFFabric {
 													Health	=	'OK'
 												};
 				Endpoints					=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
-					  }
+					  
+				Links						=	@(	@{	'odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
+													 }	
+
+												 )
+				}
 		if ($Array.serial -like $ArrayName) 
 			{	Return $SSA
 			}

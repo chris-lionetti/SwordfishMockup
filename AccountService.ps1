@@ -8,7 +8,8 @@ function Get-SFAccountServiceRoot {
                         Name					=   'Account Service';
                         Accounts				=	@{  '@odata.id' =   '/redfish/v1/AccountService/Accounts'   };
                         Roles				    =	@{  '@odata.id' =   '/redfish/v1/AccountService/Roles'      };
-                                }
+                        ServiceEnabled          =   $True;
+                    }        
         return $AccountRoot
     }
 }
@@ -19,7 +20,7 @@ function Get-SFAccountCol {
         $Members=@()
         $users=( Get-NsUser )
         foreach ($user in $users)
-            {	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/AccountService/Accounts/'+$user.name 
+            {	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/AccountService/Accounts/'+$user.id 
                                  }
                 $Members+=$localMembers
             }
@@ -37,28 +38,20 @@ function Get-SFAccountCol {
 }
 
 function Get-SFAccount {	
-    param(  $AccountName    )
+    param(  $AccountId    )
     process{
-        $user=( Get-NsUser -name $AccountName)
-        if ($user.disabled) 
-            {   $Status = @{    State = 'Disabled';
-                                Health= 'OK'
-                           }
-            } else 
-            {   $Status = @{    State = 'Enabled';
-                                Health= 'OK'
-                           }
-            }
+        $user=( Get-NsUser -Id $AccountId)
         $Account =  [ordered]@{
                         '@Redfish.Copyright'	= 	$RedfishCopyright;
-                        '@odata.id'				=	'/redfish/v1/AccountService/Accounts/'+$AccountName;
+                        '@odata.id'				=	'/redfish/v1/AccountService/Accounts/'+$AccountId;
                         '@odata.type'			=	'#ManagerAccount.v1_5_0.ManagerAccount';
-                        Name					=   $user.full_name;
-                        UserName                =   $AccountName;
                         Id                      =   $user.id;
+                        Name					=   $user.full_name;
+                        UserName                =   $user.name;
                         Description             =   $user.description;
                         RoleId                  =   $user.role;
-                        Links                    =  @{  Role = @{  '@odata.id' =   '/redfish/v1/AccountService/Roles/'+($user.role)
+                        Locked                  =   (-not $User.Disabled)
+                        Links                   =  @{  Role = @{  '@odata.id' =   '/redfish/v1/AccountService/Roles/'+($user.role)
                                                                 }
                                                      }
                              }

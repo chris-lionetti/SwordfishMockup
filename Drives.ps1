@@ -63,20 +63,22 @@ process{
 									CapacityBytes			=	$disk.size;
 							 		FailurePredicted		=	$disk.raid_state;
 							 		Protocol				=	"SAS";
-							 		MediaType				=	$disk.type;
+							 		MediaType				=	($disk.type).ToUpper();
 							 		Manufacturer			=	$disk.vendor;
 							 		SerialNumber			=	$disk.serial;
 							 		PartNumber				=	$disk.vendor+"_"+$disk.model;	 
 						 	 		AssetTag				=	$disk.serial;
 							 		CapableSpeedGbs			=	6;
-							 		NegotiatedSpeedGbs		=	6
+									NegotiatedSpeedGbs		=	6;
+									Multipath				=	$True; 
+									StoragePools			=	@( 	@{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/Default'
+																	 }
+																 );
+									Chassis					=	@{		'@odata.id' =	'/redfish/v1/Chassis/'+$Shelf.Serial
+																 }
+									
 					   			}
 		}
 	return $DriveObj
 }
 }
-
-#Identifiers			= 	@(	@{	DurableNameFormat	=	"NimbleID";
-#DurableName			=	$disk.id
-#}
-#);

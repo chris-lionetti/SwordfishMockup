@@ -21,11 +21,11 @@ function Get-SFRedfishRoot {
 						Name				=	"Root Service";
 						Chassis				=	@{	'@odata.id'	=	'/redfish/v1/Chassis'			};
 						Systems				= 	@{  '@odata.id'	=	'/redfish/v1/Systems'			};		
-						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/StorageSystems'	};
+						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/Storage'			};
 						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
 						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
-						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		}
-						Fabrics				=	@{	'@odata.id' =	'/redfish/v1/Fabrics'		}
+						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		};
+						Fabrics				=	@{	'@odata.id' =	'/redfish/v1/Fabrics'			}
 							   }
 		Return $ServicesRoot
 	}
@@ -40,7 +40,7 @@ function Get-SFSystemRoot {
 				'@odata.id'			=	'/redfish/v1/Systems';
                 Name				=	'Computer System Collection';
                 'Members@odata.count'=	1;                
-				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
+				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial
 										 	}
 										 )	
 			 		 	 }

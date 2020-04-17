@@ -26,9 +26,12 @@ process
 	if ( ($shelf.psu_overall_status -like "OK") -and ($shelf.fan_overall_status -like "OK") -and ($shelf.temp_overall_status -like "OK") )
 		{ 	$NimbleShelfLED="Lit" 	} else 
 		{	$NimbleShelfLED="Off"	}
+	if ( $NimbleShelfLED -eq "Lit" )
+		{	$NimbleHealthStatus = "OK" } else 
+		{	$NimbleHealthStatus = "Warning" }
 	$ShelfObj=[ordered]@{	"@Redfish.Copyright" 	= $RedfishCopyright;
 							"@odata.id"				= "/redfish/v1/Chassis/"+($Shelf.serial);
-							"@odata.type"			= "#Chassis.v1_0_0.Chassis";
+							"@odata.type"			= "#Chassis.v1_11_0.Chassis";
 							Id						= ($Shelf.id);
 							Name					= ($Shelf.serial);
 							ChassisType				= "Shelf";
@@ -39,7 +42,7 @@ process
 							PartNumber				= ($Shelf.model_ext);
 							IndicatorLED			= $NimbleShelfLED;
 							Status					= @{	State 				= "Enabled";
-															Health				= $NimbleShelfLED	
+															Health				= $NimbleHealthStatus	
 											   		   };
 							Thermal					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+($Shelf.serial)+"/Thermal"	
 													   };
@@ -47,7 +50,7 @@ process
 													   };
 							Drives					= @{	'@odata.id'			= "/redfish/v1/Chassis/"+($Shelf.Serial)+"/Drives"
 													   };
-							Links					= @{	'StorageSystems'	= "/redfish/v1/StorageSystem/"+($Array.serial) }
+							Links					= @{	'StorageSystems'	= "/redfish/v1/Storage/"+($Array.serial) }
 						}	
 	if ($Shelf)
 		{	return $ShelfObj

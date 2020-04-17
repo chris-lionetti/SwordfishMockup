@@ -56,7 +56,7 @@ function Get-SFVolume {
 		}
 	$VolObj =[ordered]@{
 				'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name;
+				'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Volume.name;
 				'@odata.type'			=	'#Volume.v1_4_0.Volume';
 				Id						=	$Volume.id;
 				Name					=	$Volume.name;
@@ -111,14 +111,14 @@ function Get-SFVolume {
 											 )			
 				}
 	if ( (get-nssnapshot -vol_name $VolumeName) -and $Experimental )
-		{	$Snapss = @(	@{	'@odata.id'	=	'/redfish/v1/'+$NimbleSerial+'/Volumes/'+$VolumeName+'/Snapshots'
+		{	$Snapss = @(	@{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$VolumeName+'/Snapshots'
 							 }
 					   )
 			$VolObj+= @{	Snapshots = $Snapss
 					   }
 		}
 	if ( $Volume.volcoll_name )
-        {   $VolColl= @{ ConsistencyGroup    =   '/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroup/'+$Volume.volcoll_name
+        {   $VolColl= @{ ConsistencyGroup    =   '/redfish/v1/Storage/'+$NimbleSerial+'/ConsistencyGroup/'+$Volume.volcoll_name
                        }
             $VolObj+=$VolColl
         }

@@ -5,10 +5,10 @@ function Get-SFStorageSystemRoot {
 	process{
 		$SSRoot=[ordered]@{	
 				'@odata.Copyright'	=	$RedfishCopyright;
-				'@odata.type'		=	'#StorageSystemCollection.StorageSystempCollection';
-				'@odata.id'			=	'/redfish/v1/StorageSystems';
+				'@odata.type'		=	'#StorageCollection.StorageCollection';
+				'@odata.id'			=	'/redfish/v1/Storage';
 				Name				=	'Storage System Collection';
-				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
+				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial
 										 	}
 										 )	
 			 		  }
@@ -23,8 +23,8 @@ function Get-SFStorageSystem {
 		$Array= Get-NSArray
 		$SSA=[ordered]@{
 				'@odata.Copyright'			=	$RedfishCopyright;
-				'@odata.type'				=	'#StorageSystem.v1_0_0.StorageSystem';
-				'@odata.id'					=	'/redfish/v1/StorageSystems/'+$NimbleSerial;
+				'@odata.type'				=	'#Storage.v1_0_0.System';
+				'@odata.id'					=	'/redfish/v1/Storage/'+$NimbleSerial;
 				Name						=	$Array.name;
 				Id							=	$Array.id;
 				Description					=	$Array.description;
@@ -33,13 +33,13 @@ function Get-SFStorageSystem {
 												};
 				Drives						=	'/redfish/v1/Chassis/'+$NimbleSerial+'/drives';
 				Chassis						=	'/redfish/v1/Chassis/'+$NimbleSerial;
-				Endpoints					=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
-				EndpointGroups				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/EndpointGroups';
-				ConsistencyGroups			=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/ConsistencyGroups';
-				StorageGroups				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups';
-				StoragePools				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
-				Volumes						=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes';
-				LineOfService				= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/LineOfService'	
+				Endpoints					= 	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
+				EndpointGroups				=	'/redfish/v1/Storage/'+$NimbleSerial+'/EndpointGroups';
+				ConsistencyGroups			=	'/redfish/v1/Storage/'+$NimbleSerial+'/ConsistencyGroups';
+				StorageGroups				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups';
+				StoragePools				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools';
+				Volumes						=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes';
+				LineOfService				= 	'/redfish/v1/Storage/'+$NimbleSerial+'/LineOfService'	
 			  		  }
 		if ($Array.serial -like $ArrayName) 
 			{	Return $SSA

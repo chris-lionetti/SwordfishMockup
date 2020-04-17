@@ -5,14 +5,13 @@ process{
 	$Members=@()
 	$AccessControlMaps = ( Get-NSAccessControlRecord )
 	foreach ($Map in $AccessControlMaps)
-		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id
+		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups/'+$Map.id
                                 }
                              )
 			$Members+=$localMembers
 		}
 	$SGRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.context'		=	'/redfish/v1/$metadata#StorageGroup/'+$NimbleSerial+'/StorageGroups';
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups';
+					'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups';
 					'@odata.type'			=	'#StorageGroup.v1_4_0.StorageGroups';
 					Name					=	'Nimble Storage Groups (Access Control Maps)';
 					'Members@odata.count'	=	($AccessControlMaps).count;
@@ -45,7 +44,7 @@ process{
 		}
     $SG = [ordered]@{	
 				'@Redfish.Copyright'    = 	$RedfishCopyright;
-				'@odata.id'             =	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StorageGroups/'+$Map.id;
+				'@odata.id'             =	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups/'+$Map.id;
 				'@odata.type'           =	'#StorageGroup.v1_4_0.StorageGroup';
 				Name                    =	$Map.id;
                 Description             =	'Storage Access Control Group connecting Endpoints to Volumes';
@@ -59,7 +58,7 @@ process{
                 CHAPInformation         =   @{  InitiatorCHAPUser   =   $Map.Chap_user_name
                                              };
                 MappedVolumes           =   @( @{   LogicalUnitNumber   =   $Map.lun;
-                                                    Volume              =   '/redfish/v1/StorageServices/'+$NimbleSerial+'/Volumes/'+$Map.vol_name;  
+                                                    Volume              =   '/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Map.vol_name;  
                                                 }
                                              );
                 Id                      =   $map.id

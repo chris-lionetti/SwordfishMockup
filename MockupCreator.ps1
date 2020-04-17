@@ -211,7 +211,7 @@ function WriteA-File
 
 # StorageSystem ####
     $Data=( Get-SFStorageSystemRoot | convertTo-JSON -depth 10) 
-    WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\StorageSystems' )
+    WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\Storage' )
 
     $MyArrays = $(Get-SFStorageSystemRoot).Members
     foreach($MyArray in $MyArrays)

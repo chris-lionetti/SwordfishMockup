@@ -5,13 +5,13 @@ process{
 	$Members=@()
 	$pools=( Get-NsPool )
 	foreach ($pool in $Pools)
-		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+$Pool.name 
+		{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$Pool.name 
 							 }
 			$Members+=$localMembers
 		}
 	$PoolFolder =[ordered]@{
 					'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools';
+					'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools';
 					'@odata.type'			=	'#StoragePoolCollection.StoragePoolCollection';
 					Name					=	'NimblePoolCollection';
 					'Members@odata.count'	=	$Pools.count;
@@ -36,14 +36,14 @@ process{
 		}
 	$VolsObj=@()
 	foreach ( $Vol in ($Pool.vol_list) )
-		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Vol.name
+		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Vol.name
 						 }
 			$VolsObj+=$VolObj
 		}
 	$CapacitySources=@{}
 	$PoolObj =[ordered]@{
 				'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.id'				=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
+				'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+($Pool.name);
 				'@odata.type'			=	'#StoragePool.v1_0_0.StoragePool';
 				Id						=	($Pool.id);
 				Name					=	($Pool.name);
