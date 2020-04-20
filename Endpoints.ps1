@@ -71,10 +71,10 @@ function Get-SFEndpointTarget {
 									'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
 									'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 									Name					=	$configname+"_"+$EP.name;
-									ConnectedEntities		=	@{	EntityRole			=	'Target';
-																	EntityType			=	'NetworkController';
-
-																 };
+									ConnectedEntities		=	@(	@{	EntityRole			=	'Target';
+																		EntityType			=	'NetworkController';
+																	 }
+																 );
 									Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
 									EndpointProtocol		=	'iSCSI';
 									IPTransportDetails		=	@( 	@{	IPv4Address = 	@{	Address 	= 	$EP.data_ip
@@ -101,9 +101,9 @@ process{
 							'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$Initiator.id;
 							'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
 							Name					=	$Initiator.label;
-							EndpointRole			=	'Initiator';
-							ConnectedEntities		=	@{	EntityRole			=	'Initiator';
-														 };
+							ConnectedEntities		=	@(	 @{	EntityRole			=	'Initiator';
+															  }
+														 ); 
 							Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
 							EndpointProtocol		=	'iSCSI';
 							IPv4Address				=	$Initiator.Ip_Address;

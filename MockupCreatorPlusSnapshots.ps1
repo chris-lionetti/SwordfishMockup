@@ -164,7 +164,7 @@ function WriteA-File
         $Data = ( Get-SFDriveRoot $SplitFull | convertTo-JSON -depth 10)
         WriteA-File -FileData $Data -Folder ( $PathFull+'\Drives' )
 
-        $MyDrives = $(Get-SFDriveRoot $SplitFull).Drives
+        $MyDrives = $(Get-SFDriveRoot $SplitFull).Members
         foreach ($MyDrive in $MyDrives)
         {   $PathDRaw=$MyDrive.'@odata.id'
             $PathDFull=$MyMockupDir+($PathDRaw.replace('/','\') ) 

@@ -35,8 +35,8 @@ function Get-SFEndpointGroup {
 	param(	$EndpointGroupName
 		 )
 	$result=''
-	$Result1 = Get-SFInitiatorEndpointGroup -EndpointGroupName $EndpointGroupName
-	$Result2 = Get-SFTargetEndpointGroup 	-EndpointGroupName $EndpointGroupName
+	$Result1 = Get-SFInitiatorEndpointGroup -EndpointGroupName $EndpointGroupName -erroraction SilentlyContinue
+	$Result2 = Get-SFTargetEndpointGroup 	-EndpointGroupName $EndpointGroupName -erroraction SilentlyContinue
 	if ($result1) { $result = $result1 } else { $result=$result2 }
 	return $result
 }
@@ -56,7 +56,7 @@ function Get-SFInitiatorEndpointGroup {
 			}
 	foreach($IndInit in $InitCol)
 			{	$InitID=$IndInit.id
-				$InitEP+=@{		'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial+'/Endpoints/'+$IndInit.id	
+				$InitEP+=@{		'@odata.id'	=	'/redfish/v1/Fabric/'+$NimbleSerial+'/Endpoints/'+$IndInit.id	
 			}			  }
 	foreach($Map in $AccessMaps)
 			{	if($Map.Initiator_Group_id -like $InitG.id)
@@ -89,7 +89,7 @@ function Get-SFTargetEndpointGroup {
 		$NicList=$active.array_list.nic_list
 		foreach($nic in $NicList)
 		{	if ($Sub.name -like $nic.subnet_label)
-			{	$TargEP+=@{	'@odata.id'	= 	'/redfish/v1/Storage/'+$NimbleSerial+'/Endpoints/'+$active.role+'_'+$nic.name	
+			{	$TargEP+=@{	'@odata.id'	= 	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$active.role+'_'+$nic.name	
 						  }
 			}
 		}

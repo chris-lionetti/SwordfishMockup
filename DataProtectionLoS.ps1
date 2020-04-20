@@ -33,7 +33,7 @@ process{
 	$PSRoot = [ordered]@{
 					'@odata.Copyright'		=	$SwordfishCopyright;
 					'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/LineOfService/DataProtectionLineOfService';
-					'@odata.type'			=	'#DataProtectionLinesOfService.v1_0_0.DataProtectionLinesOfService';
+					'@odata.type'			=	'#DataProtectionLinesOfServiceCollection.DataProtectionLinesOfServiceCollection';
 					Name					=	'Nimble Protection Policies';
 					'Members@odata.count'	=	($PSs).count;
 					Members					=	@( $Members )
@@ -133,13 +133,12 @@ process{
 	$RepeatInterval='R'+$PS.num_retain
 	$PSG = [ordered]@{	'@odata.Copyright'    	= 	$SwordfishCopyright;
 						'@odata.id'             =	'/redfish/v1/Storage/'+$NimbleSerial+'/LinesOfSerice/DataProtectionLineOfService/'+($PS.id);
-						'@odata.type'           =	'#DataProtectionLineOfService.v1_2_0.DataProtectionLineOfService';
+						'@odata.type'           =	'#DataProtectionLineOfService.v1_2_1.DataProtectionLineOfService';
 						Id                      =   ($PS.id);
 						Name                    =	($PS.name);
 						Description             =	($PS.description);
 						IsIsolated				=	$IsIsolated;
 						ReplicaType				=	$ReplicaType;
-						ReplicaAccessLocation	=	$ReplicaLocation;
 						RecoveryTimeObjective	=	0
 						Schedule				=	$Schedule;
 						RecoveryPointObjective	=	$RPO;

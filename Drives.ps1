@@ -33,8 +33,8 @@ param(	$diskname,
 process{
 	$result = ""
 	$DriveObj=@{}
-	write-verbose "DiskName = $diskname"
-	write-verbose "ShelfSer = $ShelfSer"
+	Write-Host "DiskName = $diskname"
+	write-host "ShelfSer = $ShelfSer"
 	$Shelf = ( Get-nsShelf | where { $_.serial -like $ShelfSer } )
 	foreach ( $rawdisk in Get-NSDisk )
 	{	$Loc = "DiskShelf"+$($rawdisk.vshelf_id)+"Location"+$($rawdisk.slot)

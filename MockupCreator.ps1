@@ -130,7 +130,7 @@ function WriteA-File
     $Data=( Get-SFEventCol | convertTo-JSON -depth 10) 
     WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\EventService\Events' )
     
-    $MyEvents = $(Get-SFEventCol).Events
+    $MyEvents = $(Get-SFEventCol).Members
     foreach ($MyEvent in $MyEvents)
     {   $PathRaw=$MyEvent.'@odata.id'
         $PathFull=$MyMockupDir+( $PathRaw.replace('/','\') )
@@ -164,8 +164,10 @@ function WriteA-File
     
         $Data = ( Get-SFDriveRoot $SplitFull | convertTo-JSON -depth 10)
         WriteA-File -FileData $Data -Folder ( $PathFull+'\Drives' )
-
-        $MyDrives = $(Get-SFDriveRoot $SplitFull).Drives
+        write-host "MySplitname = $SplitFull"
+        $MyDrives = $(Get-SFDriveRoot $SplitFull).Members
+        write-host "My Drives = "
+        $MyDrives | out-string
         foreach ($MyDrive in $MyDrives)
         {   $PathDRaw=$MyDrive.'@odata.id'
             $PathDFull=$MyMockupDir+($PathDRaw.replace('/','\') ) 
@@ -203,8 +205,8 @@ function WriteA-File
             $MyEP=$Split[$Split.count-1]   # Get the last drive name from the item
             write-host "The path is $MyEPPath and the Endpoint is $MyEP"
             $Data = ( Get-SFEndpoint $MyEP | convertTo-JSON -depth 10) 
-            Write-host "My EP is $MyEP "
-            Write-host "My Data is $Data "
+            # Write-host "My EP is $MyEP "
+            # Write-host "My Data is $Data "
             WriteA-File -FileData $Data -Folder $MyEPPath
         }
     }
@@ -336,30 +338,6 @@ function WriteA-File
             write-verbose "The path is $MyVolPath and the Volume is $MyVolSplit"
             $Data = ( Get-SFVolume $MyVolSplit | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $MyVolPath
-
-            <#
-            # Snapshots
-            $Data= ( Get-SFVolume $MyVolSplit)
-            
-            if ( $Data.Snapshots )
-            {   $Data= ( Get-SFSnapshotIndex $MyVolSplit | ConvertTo-JSON -depth 10 )
-                WriteA-File -FileData $Data -Folder ($MyVolPath+'\snapshots')
-                   
-                $MySnaps = ( Get-SFSnapshotIndex $MyVolSplit).Members
-                foreach( $MySnap in $MySnaps)
-                {   $PathRaw=$MySnap.'@odata.id'
-                    $MySnapPath=$MyMockupDir+( $PathRaw.replace('/','\') )
-                    $Split=$PathRaw.split('/')
-                    $MySnapSplit=$Split[$Split.count-1]   # Get the last drive name from the item
-                    write-verbose "The path is $MySnapPath and the Snapshot is $MySnapSplit in volume $MyVolSplit"
-                    $Data = ( Get-SFSnapshot -VolName $MyVolSplit -SnapId $MySnapSplit | convertTo-JSON -depth 10) 
-                    WriteA-File -FileData $Data -Folder $MySnapPath
-
-                }
-
-            }
-            #>
-
         }
 
     }

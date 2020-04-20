@@ -12,7 +12,7 @@ process{
 		}
 	$SGRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
 					'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups';
-					'@odata.type'			=	'#StorageGroup.v1_4_0.StorageGroups';
+					'@odata.type'			=	'#StorageGroup.v1_2_1.StorageGroups';
 					Name					=	'Nimble Storage Groups (Access Control Maps)';
 					'Members@odata.count'	=	($AccessControlMaps).count;
 					Members					=	@( $Members )
@@ -40,16 +40,16 @@ process{
 		{ 	$Igroup = ''
 		}				
 	if ( -not $IGroup.target_subnets -and $IGroup)
-		{	$ServerEPG += @{ 	'@odata.id'	= 	$NimbleSerial+'_AllSubnets'	}
+		{	$ServerEPG += @{ 	'@odata.id'	= 	'/redfish/v1/Storage/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets'	}
 		}
     $SG = [ordered]@{	
 				'@Redfish.Copyright'    = 	$RedfishCopyright;
 				'@odata.id'             =	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups/'+$Map.id;
-				'@odata.type'           =	'#StorageGroup.v1_4_0.StorageGroup';
+				'@odata.type'           =	'#StorageGroup.v1_2_1.StorageGroup';
 				Name                    =	$Map.id;
                 Description             =	'Storage Access Control Group connecting Endpoints to Volumes';
                 'ClientEndpointGroups@odata.count'	=	1;	
-				ClientEndpointGroups    =	@(	@{ 	'@odata.id' 		=	$Map.Initiator_Group_id 
+				ClientEndpointGroups    =	@(	@{ 	'@odata.id' 		=	'/redfish/v1/Storage/'+$NimbleSerial+'/EndpointGroups/'+$Map.Initiator_Group_id 
 												 }
 											 ); 
 				ServerEndpointGroups	=	@( $ServerEPG

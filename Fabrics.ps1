@@ -32,7 +32,7 @@ function Get-SFFabric {
 												};
 				Endpoints					=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
 					  
-				Links						=	@(	@{	'odata.id'	=	'/redfish/v1/StorageSystems/'+$NimbleSerial
+				Links						=	@(	@{	'odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial
 													 }	
 
 												 )

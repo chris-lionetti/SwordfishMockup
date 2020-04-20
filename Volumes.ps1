@@ -4,14 +4,14 @@ function Get-SFVolumeRoot {
   	{ 	$VolCount=0
 		$Members=@()
 		foreach ( $Volume in (Get-NSVolume) )
-			{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+			{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Volume.name 
 								 }
 				$VolCount=$VolCount+1
 				$Members+=$LocalMembers
 			}
 		$VolFolder =[ordered]@{	
 						'@Redfish.Copyright'	= 	$RedfishCopyright;
-						'@odata.id'				=	'/redfish/v1//StorageSystems/'+$NimbleSerial+'/Volumes';
+						'@odata.id'				=	'/redfish/v1//Storage/'+$NimbleSerial+'/Volumes';
 						'@odata.type'			=	'#VolumeCollection.VolumesCollection';
 						Name					=	'NimbleVolumeCollection';
 						'Members@odata.count'	=	$VolCount;
@@ -29,7 +29,7 @@ function Get-SFVolume {
    {$ProvidingPools=@()
 	$Volume = Get-NsVolume -name $VolumeName
 	$pool = $Volume.pool_name
-	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/StorageSystems/'+$NimbleSerial+'/StoragePools/'+$pool 
+	$LocalMembers = @{	'@odata,id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$pool 
 					 }
 	$ProvidingPools+=$localMembers
 	if ( $Volume.online)
@@ -61,9 +61,7 @@ function Get-SFVolume {
 				Id						=	$Volume.id;
 				Name					=	$Volume.name;
 				Description				=	$Volume.description;
-				Capacity				=	@{	AllocatedBytes	=	($Volume.Size * 1024) ;
-												ConsumedBytes	=	$Volume.vol_usage_compressed_bytes	
-											 };
+				CapacityBytes			=	($Volume.Size * 1024);					
 				Status					=	@{	State			=	$VolStatus_state;
 												Health			=	$VolStatus_health;
 											 };
@@ -85,8 +83,8 @@ function Get-SFVolume {
 				WriteCachePolicyType	=	"ProtectedWriteBack";
 				WriteCacheStateType		=	"Protected";
 				WriteHoleProtectionPolicyType = "Journaling";
-				CapacitySources			=	@(  @{ 	ProvidedCapacity	=	@{	AllocatedCapacity	=	$Pool.Capacity;
-																				ConsumedBytes		=	$Pool.usage
+				CapacitySources			=	@(  @{ 	ProvidedCapacity	=	@{	AllocatedCapacity	=	($Volume.Size * 1024);
+																				ConsumedBytes		=	$Volume.vol_usage_compressed_bytes
 				 															 };	
 													ProvidingPools		=	@{	Pools				=	@( $ProvidingPools )
 												 }							 }

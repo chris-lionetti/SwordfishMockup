@@ -7,7 +7,7 @@ function Get-SFEventServiceRoot {
                         '@odata.type'			=	'#EventService.v1_5_0.EventService';
                         Name					=   'Event Service';
                         Id                      =   'Event Service';
-                        ServiceEnabled          =   'True';
+                        ServiceEnabled          =   $True;
                         Status                  =   @{  State   =  'Enabled';
                                                         Health  =  'OK' 
                                                      };

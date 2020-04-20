@@ -39,10 +39,18 @@ process{
 		{	$IsConsistent = $False			
 		}
 	switch($VolCol.app_sync)
-		{	'none'		{	$AppSync = "Other"	}	
-			'vss'		{	$AppSync = "VSS"	}
-			'vmware'	{	$AppSync = "VASA"	}
-			'generic'	{	$AppSync = "Other"	}
+		{	'none'		{	$AppSync = "Other"	
+							$ConType = "CrashConsistent"
+						}	
+			'vss'		{	$AppSync = "VSS"	
+							$ConType = "ApplicationConsistent"
+						}
+			'vmware'	{	$AppSync = "VASA"	
+							$ConType = "ApplicationConsistent"
+						}
+			'generic'	{	$AppSync = "Other"	
+							$ConType = "CrashConsistent"
+						}
 		}
 	if ($VolCol.protection_type -like 'local')
 		{	$ReplicaType = 'snapshot' 
@@ -57,8 +65,8 @@ process{
 				Name                    =	($VolCol.name);
 				Id						=	($VolCol.id);
                 Description             =	'Volume Collection (used as a Consistency Group)';
-				ConsistencyMethod		=	($AppSync);
-				ConsistencyType			=	($VolCol.app_sync);
+				ConsistencyMethod		=	$AppSync;
+				ConsistencyType			=	$ConType;
 				IsConsistent			=	($IsConsistent);
 				Status					=	'OK';
 				ReplicaInfo				=	($VolCol.replication_partner);
