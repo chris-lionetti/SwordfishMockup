@@ -1,0 +1,21 @@
+{
+    "@Redfish.Copyright":  "Copyright 2014-2016(DMTF).",
+    "@odata.id":  "/redfish/v1/Fabrics/AC-109032/Endpoints/0b2b4bd8361b856bbc000000000000000000000007",
+    "@odata.type":  "#Endpoint.v1_4_0.Endpoint",
+    "Name":  "NSSCORCH-Autocreated",
+    "ConnectedEntities":  [
+                              {
+                                  "EntityRole":  "Initiator"
+                              }
+                          ],
+    "Description":  " configuration, Port named . iSCSI Target.",
+    "EndpointProtocol":  "iSCSI",
+    "IPv4Address":  "*",
+    "Id":  "0b2b4bd8361b856bbc000000000000000000000007",
+    "Identifiers":  [
+                        {
+                            "DurableName":  "iqn.1991-05.com.microsoft:nsscorch.lionetti.lab",
+                            "DurableNameFormat":  "iqn"
+                        }
+                    ]
+}

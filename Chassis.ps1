@@ -66,8 +66,7 @@ process	{	$Shelf = ( Get-NSShelf | where-object {$_.serial -like $ShelfName } )
 }
 
 
-
-function Get-SFChassisPower{
+function Get-SFChassisPowerRoot{
 	param(	$Shelfname
 		 )
 	process{
@@ -85,8 +84,74 @@ function Get-SFChassisPower{
 					else 
 					{ $LocalState="Faulted" }
 				$PSData=(Get-NSController)
+				$PowerSupply= @{	
+									'@odata.id'			=	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power/PowerSupplies/"+$PSCount;
+									
+							   }
+				$PowerSupplyObj+=$PowerSupply
+				$PSCount+=1
+			}	
+		$PowerObj=[ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+								'@odata.type'			= 	"#Power.v1_1_0.Power";
+								'@odata.id'				= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power";
+								Id						= 	($Shelf.ID);
+								Name					= 	"NimbleShelfPower";
+								PowerControl			= 	@( 	@{	'@odata.id'	= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power#/PowerControl/0";
+																	MemberID	= 	"0";
+																	Status 		= 	@{	State	=	$NimbleShelfEnabled;
+																						Health	=	$NimbleShelfPowerStatus
+																					  }
+																}
+															 )
+								PowerSupplies			= 	$PowerSupplyObj
+							   }
+		if ($Shelf)
+			{	return $PowerObj
+			}
+	}
+}
+
+function Get-SFChassisPowerSupplyRoot{
+	param(	$Shelfname
+		 )
+	process{
+		$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
+		$PowerSupplyObj=@()
+		$PSCount=0
+		foreach ($PS in ($Shelf).chassis_sensors )
+			{	$PSCount+=1
+				$PowerSupply= @{	
+									'@odata.id'			=	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power/PowerSupplies/"+$PSCount;									
+							   }
+				$PowerSupplyObj+=$PowerSupply
+			}	
+		$PowerObj=[ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+								'@odata.type'			= 	"#PowerSupplyCollection..PowerSupplyCollection";
+								'@odata.id'				= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power/PowerSupplies";
+								Name					= 	"Power Supplies Collection";
+								'Members@odata.count'	=	$PSCount;
+								Members					= 	$PowerSupplyObj;
+							}
+		if ($Shelf)
+			{	return $PowerObj
+			}
+	}
+}
+
+function Get-SFChassisPowerSupplies{
+	param(	$Shelfname,
+			$PSNum
+		 )
+	process{
+		$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
+		$PSCount=1
+		foreach ($PS in ($Shelf).chassis_sensors )
+			{	if ( $($PS.status) -like 'OK' ) 
+					{ $LocalState="Enabled" } 
+					else 
+					{ $LocalState="Faulted" }
 				$PowerSupply= @{	'@Redfish.Copyright'= 	$RedfishCopyright;
-									'@odata.id'			=	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power#/PowerSupplies/"+$PSCount;
+									'@odata.id'			=	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power/PowerSupplies/"+$PSCount;
 									MemberID			= 	"$PSCount";
 									Status				= 	@{		State	= $LocalState;
 																	Health	= ($PS.Status)
@@ -110,81 +175,14 @@ function Get-SFChassisPower{
 																 }
 															 )
 							   }
-				$PowerSupplyObj+=$PowerSupply
+				if ( $Shelf -and ( $PSNum -like $PSCount ) )
+					{	return $PowerSupply
+					}
 				$PSCount+=1
-			}	
-		$PowerObj=[ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-								'@odata.type'			= 	"#Power.v1_1_0.Power";
-								'@odata.id'				= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power";
-								Id						= 	($Shelf.ID);
-								Name					= 	"NimbleShelfPower";
-								PowerControl			= 	@( 	@{	'@odata.id'	= 	"/redfish/v1/Chassis/"+($Shelf.serial)+"/Power#/PowerControl/0";
-																	MemberID	= 	"0";
-																	Status 		= 	@{	State	=	$NimbleShelfEnabled;
-																						Health	=	$NimbleShelfPowerStatus
-																					  }
-																}
-															 )
-								PowerSupplies			= 	$PowerSupplyObj
-								RelatedItem				=	@(	@{	'@odata.id'	=	"/redfish/v1/Chassis/"+($Shelf.serial)
-																 }
-															 )
-							   }
-		if ($Shelf)
-			{	return $PowerObj
-			}
+			}			
 	}
 }
-	<#
-	param(	$Shelfname
-		 )
-	process{$Shelf = ( Get-NSShelf | where-object { $_.serial -like $ShelfName } )
-   			$NimbleShelfPowerStatus = $Shelf.psu_overall_status
-   			if ($NimbleShelfPowerStatus -like 'ok') 
-				{	$NimbleShelfEnabled = "Enabled" 
-				} else 
-				{	$NimbleShelfEnabled = "Faulted" 
-				}
-   			$PowerSupplyObj=@()
-   			$PSCount=1
-   			foreach ($PS in ($Shelf).chassis_sensors )
-	   			{	if ( $($PS.status) -like 'OK' ) 
-						{ $LocalState="Enabled" 
-						} else 
-						{ $LocalState="Faulted" 
-						}
-		   			$PowerSupply= @{	'@Redfish.Copyright'= 	$RedfishCopyright;
-							   			'@odata.id'			=	'/redfish/v1/Chassis/'+($Shelf.serial)+'/Power/PowerSupplies/'+$PSCount;
-							   			MemberID			= 	$PSCount;
-							   			Status				= 	@{	State	= $LocalState;
-																	Health	= ($PS.Status)
-														   		 };
-										Manufacturer		= 	"HPE-Nimble"
-									}
-		   			$PowerSupplyObj+=$PowerSupply
-		   			$PSCount+=1
-	   			}	
-   			$PowerObj=[ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-						   			'@odata.type'			= 	'#Power.v1_1_0.Power';
-						   			'@odata.id'				= 	'/redfish/v1/Chassis/'+($Shelf.serial)+'/Power';
-						   			Id						= 	($Shelf.ID);
-						   			Name					= 	"NimbleShelfPower";
-						   			PowerControl			= 	@( 	@{	'@odata.id'	= 	'/redfish/v1/Chassis/'+($Shelf.serial)+'/Power#/PowerControl/0';
-																		MemberID	= 	0;
-															   			Status 		= 	@{	State	=	$NimbleShelfEnabled;
-																						   	Health	=	$NimbleShelfPowerStatus
-																				 		 }
-														   			 }
-																 );
-						   			PowerSupplies			= 	$PowerSupplyObj
-						  		}
-   			if ($Shelf)
-	   			{	return $PowerObj
-	   			}
-		   }
-}
-#>
-		
+
 function Get-SFChassisThermal {
 	param(	$ShelfName
 		 )

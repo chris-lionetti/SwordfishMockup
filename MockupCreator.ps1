@@ -19,12 +19,12 @@ if ( get-nsarray )
         exit
     }
 $Global:NimbleSerial	    =	(Get-nsArray).serial
-$Global:RedfishCopyright    =	"Copyright 2014-2016 Distributed Management Task Force, Inc. (DMTF). For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
-$Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry Association (SNIA), USA. All rights reserved. For the full SNIA copyright policy, see http://www.snia.org/about/corporate_info/copyright"
+$Global:RedfishCopyright    =	"Copyright 2014-2016 HPE and DMTF"
+$Global:SwordfishCopyright  =	"Copyright 2016-2019 HPE and SNIA"
 . .\Chassis.ps1                                 # These are all of the Subroutines to return the JSON. Subdivided to make troubleshooting simpler.
 . .\Drives.ps1
 . .\Endpoints.ps1
-. .\EndpointGroups.ps1
+. .\Zones.ps1
 . .\StoragePools.ps1
 . .\StorageGroups.ps1
 . .\StorageSystems.ps1
@@ -87,8 +87,8 @@ function WriteA-File
     $Data=( Get-SFRedfishRoot | convertTo-JSON -depth 10) 
     WriteA-File -FileData $Data -Folder $RedfishRoot
 
-    $Data=( Get-SFSystemRoot | convertTo-JSON -depth 10) 
-    WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\Systems' )
+#    $Data=( Get-SFSystemRoot | convertTo-JSON -depth 10) 
+#    WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\Systems' )
 
 
 # ACCOUNTS ####
@@ -156,8 +156,22 @@ function WriteA-File
         $Data= ( Get-SFChassis $SplitFull | convertTo-JSON -depth 10) 
         WriteA-File -FileData $Data -Folder $PathFull
 
-        $Data = ( Get-SFChassisPower $SplitFull | convertTo-JSON -depth 10)
+        $Data = ( Get-SFChassisPowerRoot $SplitFull | convertTo-JSON -depth 10)
         WriteA-File -FileData $Data -Folder ( $PathFull+'\Power' )
+
+        $MyPS = ( Get-SFChassisPowerSupplyRoot $SplitFull | convertTo-JSON -depth 10)
+        WriteA-File -FileData $MyPS -Folder ( $PathFull+'\Power\PowerSupplies' )
+        
+        $MyPSs = ( Get-SFChassisPowerSupplyRoot -Shelfname $NimbleSerial ).members
+        foreach($MyPS in $MyPSs)
+        {   $PathDRaw=$MyPS.'@odata.id'
+            $PathDFull=$MyMockupDir+($PathDRaw.replace('/','\') ) 
+            $DSplit=$PathDRaw.split('/')
+            $ItemNum=$DSplit[$DSplit.count-1]   # Get the item name from the item
+            write-host "The path is $PathDFull and the PS Number  is $ItemNum"
+            $Data= ( Get-SFChassisPowerSupplies -Shelfname $NimbleSerial -PSNum $ItemNum | convertTo-JSON -depth 10) 
+            WriteA-File -FileData $Data -Folder $PathDFull
+        }
 
         $Data = ( Get-SFChassisThermal $SplitFull | convertTo-JSON -depth 10)
         WriteA-File -FileData $Data -Folder ( $PathFull+'\Thermal' )
@@ -176,13 +190,13 @@ function WriteA-File
             write-host "The path is $PathDFull and the Serial is $DSplitFull"
             $Data= ( Get-SFdrive -shelfser $SplitFull -DiskName $DSplitFull | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $PathDFull
-
         }
     }
 
 # Fabrics
     $Data=( Get-SFFabricRoot | convertTo-JSON -depth 10) 
     WriteA-File -FileData $Data -Folder ( $RedfishRoot+'\Fabrics' )
+
     $MyArrays = $(Get-SFFabricRoot).Members
     foreach($MyArray in $MyArrays)
     {   $PathRaw=$MyArray.'@odata.id'
@@ -194,9 +208,10 @@ function WriteA-File
         WriteA-File -FileData $Data -Folder $MyArrayPath
     
         # Endpoints
+        Remove-Variable -name Data -erroraction silentlycontinue  
         $Data= ( Get-SFEndpointRoot | convertTo-JSON -depth 10) 
         WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Endpoints' )
-  
+
         $MyEndpoints= $(Get-SFEndpointRoot).Members
         foreach($MyEndpoint in $MyEndpoints)
         {   $PathRaw=$MyEndpoint.'@odata.id'
@@ -205,10 +220,37 @@ function WriteA-File
             $MyEP=$Split[$Split.count-1]   # Get the last drive name from the item
             write-host "The path is $MyEPPath and the Endpoint is $MyEP"
             $Data = ( Get-SFEndpoint $MyEP | convertTo-JSON -depth 10) 
-            # Write-host "My EP is $MyEP "
-            # Write-host "My Data is $Data "
             WriteA-File -FileData $Data -Folder $MyEPPath
         }
+        # Zones (Initiator Groups)
+        $Data= ( Get-SFZoneRoot | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Zones' )
+        $MyZones= $(Get-SFZoneRoot).Members
+        foreach($MyZone in $MyZones)
+        {   $PathRaw=$MyZone.'@odata.id'
+            $MyZonePath=$MyMockupDir+( $PathRaw.replace('/','\') )
+            $Split=$PathRaw.split('/')
+            $MyZoneName=$Split[$Split.count-1]   # Get the last drive name from the item
+            write-host "The path is $MyZonePath and the Endpoint is $MyZoneName"
+            $Data = ( Get-SFZone $MyZoneName | convertTo-JSON -depth 10)
+            if ($Data) 
+                {   WriteA-File -FileData $Data -Folder $MyZonePath
+                }
+        }
+
+        # Connections (Acccess Maps)
+        $Data= ( Get-SFStorageGroupRoot | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Connections' )
+        $MySGs= $(Get-SFStorageGroupRoot).Members
+        foreach($MySG in $MySGs)
+                {   $PathRaw=$MySG.'@odata.id'
+                    $MySGPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+                    $Split=$PathRaw.split('/')
+                    $MySG=$Split[$Split.count-1]   # Get the last drive name from the item
+                    $Data = ( Get-SFStorageGroup $MySG | convertTo-JSON -depth 10) 
+                    write-host "The path is $MySGPath and the Endpoint is $MySG"
+                    WriteA-File -FileData $Data -Folder $MySGPath
+                }
     }
 
 # StorageSystem ####
@@ -218,47 +260,28 @@ function WriteA-File
     $MyArrays = $(Get-SFStorageSystemRoot).Members
     foreach($MyArray in $MyArrays)
     {   $PathRaw=$MyArray.'@odata.id'
-        $MyArrayPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+        $MyArrayPath = $MyMockupDir+( $PathRaw.replace('/','\') )
         $Split=$PathRaw.split('/')
         $MyArraySerial=$Split[$Split.count-1]   # Get the last drive name from the item
         write-host "The path is $MyArrayPath and the Serial is $MyArraySerial"
         $Data= ( Get-SFStorageSystem $MyArraySerial | convertTo-JSON -depth 10) 
         WriteA-File -FileData $Data -Folder $MyArrayPath
 
-        # Endpoints
-        $Data= ( Get-SFEndpointRoot | convertTo-JSON -depth 10) 
-        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Endpoints' )
+        # Storage Controllerss
+        $Data=( Get-SFStorageControllerRoot | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\StorageControllers' )
         
-        $MyEndpoints= $(Get-SFEndpointRoot).Members
-        foreach($MyEndpoint in $MyEndpoints)
-        {   $PathRaw=$MyEndpoint.'@odata.id'
-            $MyEPPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+        $MyPools= $(Get-SFStorageControllerRoot).Members
+        foreach($MyPool in $MyPools)
+        {   $PathRaw=$MyPool.'@odata.id'
+            $MySPGPath=$MyMockupDir+( $PathRaw.replace('/','\') )
             $Split=$PathRaw.split('/')
-            $MyEP=$Split[$Split.count-1]   # Get the last drive name from the item
-            write-host "The path is $MyEPPath and the Endpoint is $MyEP"
-            $Data = ( Get-SFEndpoint $MyEP | convertTo-JSON -depth 10) 
-            Write-host "My EP is $MyEP "
-            Write-host "My Data is $Data "
-            WriteA-File -FileData $Data -Folder $MyEPPath
-
-
+            $MySPG=$Split[$Split.count-1]   # Get the last drive name from the item
+            write-host "The path is $MySPGPath and the StoragePool is $MySPG"
+            $Data = ( Get-SFStorageController $MySPG | convertTo-JSON -depth 10) 
+            WriteA-File -FileData $Data -Folder $MySPGPath
         }
 
-        # Endpoint Groups
-        $Data=( Get-SFEndpointGroupRoot | convertTo-JSON -depth 10) 
-        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\EndpointGroups' )
-        
-        $MyEndpointGroups= $(Get-SFEndpointGroupRoot).Members
-        foreach($MyEndpointGroup in $MyEndpointGroups)
-        {   $PathRaw=$MyEndpointGroup.'@odata.id'
-            $MyEPGPath=$MyMockupDir+( $PathRaw.replace('/','\') )
-            $Split=$PathRaw.split('/')
-            $MyEPG=$Split[$Split.count-1]   # Get the last drive name from the item
-            write-host "The path is $MyEPGPath and the EndpointGroup is $MyEPG"
-            $Data = ( Get-SFEndpointGroup $MyEPG | convertTo-JSON -depth 10) 
-            WriteA-File -FileData $Data -Folder $MyEPGPath
-
-        }
         # Storage Pools
         $Data=( Get-SFPoolRoot | convertTo-JSON -depth 10) 
         WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\StoragePools' )
@@ -272,22 +295,38 @@ function WriteA-File
             write-host "The path is $MySPGPath and the StoragePool is $MySPG"
             $Data = ( Get-SFPool $MySPG | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $MySPGPath
-
         }
-        # Storage Groups
-        $Data=( Get-SFStorageGroupRoot | convertTo-JSON -depth 10) 
-        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\StorageGroups' )
+        # Volumes
+        $Data=( Get-SFVolumeRoot | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Volumes' )
         
-        $MySGs= $(Get-SFStorageGroupRoot).Members
-        foreach($MySG in $MySGs)
-        {   $PathRaw=$MySG.'@odata.id'
-            $MySGPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+        $MyVols= $(Get-SFVolumeRoot).Members
+        foreach($MyVol in $MyVols)
+        {   $PathRaw=$MyVol.'@odata.id'
+            $MyVolPath=$MyMockupDir+( $PathRaw.replace('/','\') )
             $Split=$PathRaw.split('/')
-            $MySG=$Split[$Split.count-1]   # Get the last drive name from the item
-            write-host "The path is $MySGPath and the StorageGroup is $MySG"
-            $Data = ( Get-SFStorageGroup $MySG | convertTo-JSON -depth 10) 
-            WriteA-File -FileData $Data -Folder $MySGPath
+            $MyVolSplit=$Split[$Split.count-1]   # Get the last drive name from the item
+            write-verbose "The path is $MyVolPath and the Volume is $MyVolSplit"
+            $Data = ( Get-SFVolume $MyVolSplit -Experimental $True | convertTo-JSON -depth 10) 
+            WriteA-File -FileData $Data -Folder $MyVolPath
 
+            # Snapshots
+            $Data= ( Get-SFVolume $MyVolSplit -Experimental $True)
+            if ( $Data.Snapshots )
+            {   $Data= ( Get-SFSnapshotIndex $MyVolSplit | ConvertTo-JSON -depth 10 )
+                WriteA-File -FileData $Data -Folder ($MyVolPath+'\snapshots')
+                   
+                $MySnaps = ( Get-SFSnapshotIndex $MyVolSplit).Members
+                foreach( $MySnap in $MySnaps)
+                {   $PathRaw=$MySnap.'@odata.id'
+                    $MySnapPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+                    $Split=$PathRaw.split('/')
+                    $MySnapSplit=$Split[$Split.count-1]   # Get the last drive name from the item
+                    write-verbose "The path is $MySnapPath and the Snapshot is $MySnapSplit in volume $MyVolSplit"
+                    $Data = ( Get-SFSnapshot -VolName $MyVolSplit -SnapId $MySnapSplit | convertTo-JSON -depth 10) 
+                    WriteA-File -FileData $Data -Folder $MySnapPath
+                }
+            }
         }
 
         # Consistency Groups
@@ -303,9 +342,7 @@ function WriteA-File
             write-host "The path is $MyCGPath and the ConsistencyGroupRoot is $MyCG"
             $Data = ( Get-SFConsistencyGroup $MyCG | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $MyCGPath
-
         }
-
         
         # Lines of Service
         $Data=( Get-SFLinesOfServiceRoot | convertTo-JSON -depth 10) 
@@ -324,20 +361,4 @@ function WriteA-File
             $Data = ( Get-SFDataProtectionLoS $MyDPLOSSplit | convertTo-JSON -depth 10) 
             WriteA-File -FileData $Data -Folder $MyDPLOSPath
         }
-
-        # Volumes
-        $Data=( Get-SFVolumeRoot | convertTo-JSON -depth 10) 
-        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Volumes' )
-        
-        $MyVols= $(Get-SFVolumeRoot).Members
-        foreach($MyVol in $MyVols)
-        {   $PathRaw=$MyVol.'@odata.id'
-            $MyVolPath=$MyMockupDir+( $PathRaw.replace('/','\') )
-            $Split=$PathRaw.split('/')
-            $MyVolSplit=$Split[$Split.count-1]   # Get the last drive name from the item
-            write-verbose "The path is $MyVolPath and the Volume is $MyVolSplit"
-            $Data = ( Get-SFVolume $MyVolSplit | convertTo-JSON -depth 10) 
-            WriteA-File -FileData $Data -Folder $MyVolPath
-        }
-
     }

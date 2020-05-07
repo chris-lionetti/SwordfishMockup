@@ -20,7 +20,6 @@ function Get-SFRedfishRoot {
 						Id					=	"RootService";
 						Name				=	"Root Service";
 						Chassis				=	@{	'@odata.id'	=	'/redfish/v1/Chassis'			};
-						Systems				= 	@{  '@odata.id'	=	'/redfish/v1/Systems'			};		
 						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/Storage'			};
 						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
 						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
@@ -31,22 +30,6 @@ function Get-SFRedfishRoot {
 	}
 }
 
-function Get-SFSystemRoot {
-	param()
-	process{
-		$SRoot=[ordered]@{
-				'@odata.Copyright'	=	$RedfishCopyright;
-				'@odata.type'		=	'#ComputerSystemCollection.ComputerSystemCollection';
-				'@odata.id'			=	'/redfish/v1/Systems';
-                Name				=	'Computer System Collection';
-                'Members@odata.count'=	1;                
-				Members				=	@( @{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial
-										 	}
-										 )	
-			 		 	 }
-		Return $SRoot
-	}
-}
 
 function test-SFID {
 	param(	$TestString

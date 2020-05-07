@@ -1,9 +1,6 @@
-$username = "admin"                                             
-                                                                # This is the Array username
-$password = ConvertTo-SecureString "admin" -AsPlainText -Force  
-                                                                # This is the Array Password, change admin to YOUR password
-$ArrayIP  = '192.168.1.60'                                      
-                                                                # This is the Array IP Address
+$username = "admin"                                             # This is the Array username                                                           
+$password = ConvertTo-SecureString "admin" -AsPlainText -Force  # This is the Array Password, change admin to YOUR password                                                              
+$ArrayIP  = '192.168.1.60'                                      # This is the Array IP Address                                                            
 ##############################################################################################################################
 $psCred = ( New-Object System.Management.Automation.PSCredential($username, $password) )
 if ( -not (get-module -ListAvailable -name HPENimblePowerShellToolkit ) )
@@ -23,12 +20,12 @@ if ( get-nsarray )
         exit
     }
 $Global:NimbleSerial	    =	(Get-nsArray).serial
-$Global:RedfishCopyright    =	"Copyright 2014-2016 Distributed Management Task Force, Inc. (DMTF). For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
-$Global:SwordfishCopyright  =	"Copyright 2016-2019 Storage Networking Industry Association (SNIA), USA. All rights reserved. For the full SNIA copyright policy, see http://www.snia.org/about/corporate_info/copyright"
+$Global:RedfishCopyright    =	"Copyright 2020 HPE and DMTF"
+$Global:SwordfishCopyright  =	"Copyright 2020 HPE and SNIA"
 . .\Chassis.ps1                                 # These are all of the Subroutines to return the JSON. Subdivided to make troubleshooting simpler.
 . .\Drives.ps1
 . .\Endpoints.ps1
-. .\EndpointGroups.ps1
+. .\Zones.ps1
 . .\StoragePools.ps1
 . .\StorageGroups.ps1
 . .\StorageSystems.ps1
@@ -76,12 +73,10 @@ while ($DontEndYet)
           }
         6 { switch($rvar[5])                        # The Request has start Redfish/v1, but then must contain the following as the last element of the request
               { "Chassis"         { $result = Get-SFChassisRoot                          | ConvertTo-JSON -Depth 10  }
-                "Storage"         { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  }
-                "Systems"         { $result = Get-SFSystemRoot                           | ConvertTo-JSON -Depth 10  } 
+                "Storage"         { $result = Get-SFStorageSystemRoot                    | ConvertTo-JSON -Depth 10  } 
                 "AccountService"  { $result = Get-SFAccountServiceRoot                   | ConvertTo-JSON -Depth 10  }
                 "EventService"    { $result = Get-SFEventServiceRoot                     | ConvertTo-JSON -Depth 10  }
                 "Fabrics"         { $result = Get-SFFabricRoot                           | ConvertTo-JSON -Depth 10  }
-                
               }
           }
         7 { switch($rvar[5])                         # The request will look something like HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#
@@ -100,8 +95,8 @@ while ($DontEndYet)
               }
           }
         8 { switch($rvar[5])                        # THis reqest will add a subquery under the individual serial name listed in the above request
-              { "Chassis"         { switch($rvar[7])# And example of this would be HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#/Volumes    
-                                      { "Power"     {  $result = Get-SFChassisPower -ShelfName ($rvar[6])    | ConvertTo-JSON -Depth 10 }
+              { "Chassis"         { switch($rvar[7])# And example of this would be HTTP://localhost:5000/redfish/v1/Chassis/Serial#/Power    
+                                      { "Power"     {  $result = Get-SFChassisPowerRoot -ShelfName ($rvar[6])| ConvertTo-JSON -Depth 10 }
                                         "Thermal"   {  $result = Get-SFChassisThermal -ShelfName ($rvar[6])  | ConvertTo-JSON -Depth 10 }
                                         "Drives"    {  $result = Get-SFDriveRoot -ShelfName ($rvar[6])       | ConvertTo-JSON -Depth 10 }
                                       }
@@ -118,8 +113,8 @@ while ($DontEndYet)
                 "Storage"         { if ( (Get-NSArray).serial -like $rvar[6] )
                                       { switch($rvar[7])
                                           { "EndpointGroups"                { $result = Get-SFEndpointGroupRoot       | ConvertTo-JSON -Depth 10 }
-                                            "Volumes"                       { $result = Get-SFVolumeRoot              | ConvertTo-JSON -Depth 10 }
-                                            "StorageGroups"                 { $result = Get-SFStorageGroupRoot        | ConvertTo-JSON -Depth 10 }
+                                            "Volumes"                       { $result = Get-SFVolumeRootCore          | ConvertTo-JSON -Depth 10 }
+                                            "StorageControllers"            { $result = Get-SFStorageControllerRoot   | ConvertTo-JSON -Depth 10 }
                                             "StoragePools"                  { $result = Get-SFPoolRoot                | ConvertTo-JSON -Depth 10 }
                                             "ConsistencyGroups"             { $result = Get-SFConsistencyGroupRoot    | ConvertTo-JSON -Depth 10 } 
                                             "LineOfService"                 { write-host "asking for LOS"
@@ -129,22 +124,28 @@ while ($DontEndYet)
                                 }
                 "Fabrics"         { if ( (Get-NSArray).serial -like $rvar[6] )
                                     { switch($rvar[7])
-                                        { "Endpoints"                     { $result = Get-SFEndpointRoot            | ConvertTo-JSON -Depth 10 }                   
+                                        { "Endpoints"                       { $result = Get-SFEndpointRoot              | ConvertTo-JSON -Depth 10 }  
+                                          "Connections"                     { $result = Get-SFStorageGroupRoot          | ConvertTo-JSON -Depth 10 }  
+                                          "Zones"                           { $result = Get-SFZoneRoot                  | ConvertTo-JSON -Depth 10 }                                                           
                                         } 
                                     }
                               }
-
               }
           }
         9 { switch($rvar[5])                      # This reqest will add a subquery under the individual serial name listed in the above request
                 { "Chassis"         { switch($rvar[7])
                                         { "Drives"                   { $result = Get-SFDrive -shelfser ($rvar[6]) -diskname ($rvar[8]) | ConvertTo-JSON -Depth 10     }
+                                          "Power"                    { switch($rvar[8])
+                                                                        { "PowerSupplies" 
+                                                                                    { $result = Get-SFChassisPowerSupplyRoot -ShelfName ($rvar[6]) | ConvertTo-JSON -Depth 10     }
+                                                                        }
+                                                                     }
                                         }       
                                     }               # And example of this would be HTTP://localhost:5000/redfish/v1/StorageSystem/Serial#/Volumes/VolumeID
                   "Storage"         { switch($rvar[7])
                                         { "EndpointGroups"              { $result = Get-GFEndpointGroup -EndpointGroupName ($rvar[8])  | ConvertTo-JSON -Depth 10     }
                                           "Volumes"                     { $result = Get-SFVolume -VolumeName ($rvar[8])                | ConvertTo-JSON -Depth 10     }
-                                          "StorageGroups"               { $result = Get-SFStorageGroup -AccessControlName ($rvar[8])   | ConvertTo-JSON -Depth 10     }
+                                          "StorageControllers"          { $result = Get-SFStorageController -ControllerName ($rvar[8]) | ConvertTo-JSON -Depth 10     }
                                           "StoragePools"                { $result = Get-SFPool -Poolname ($rvar[8])                    | ConvertTo-JSON -Depth 10     } 
                                           "ConsistencyGroups"           { $result = Get-SFConsistencyGroup -VolColname ($rvar[8])      | ConvertTo-JSON -Depth 10     }  
                                           "LineOfService"               { switch($rvar[8])
@@ -155,34 +156,44 @@ while ($DontEndYet)
                                         } 
                                     }
                   "Fabrics"  { switch($rvar[7])
-                                        { "Endpoints"                   { $result = Get-SFEndpoint -EndpointName ($rvar[8])            | ConvertTo-JSON -Depth 10     }
+                                        {   "Endpoints"                 { $result = Get-SFEndpoint      -EndpointName ($rvar[8])       | ConvertTo-JSON -Depth 10     }
+                                            "Connections"               { $result = Get-SFStorageGroup  -AccessControlname ($rvar[8])  | ConvertTo-JSON -Depth 10     }
+                                            "Zones"                     { $result = Get-SFZone          -ZoneName ($rvar[8])           | ConvertTo-JSON -Depth 10     }
                                         } 
                                     }
                 }
             }
         10{ switch($rvar[5])
               { "Storage"    { switch($rvar[7])
-                                    { "Volumes"         { switch($rvar[9])
-                                                            { "Snapshots"   { $result = Get-SFSnapshotIndex -VolName ($rvar[8])            | ConvertTo-JSON -depth 10 }
+                                    { "StoragePools"    { switch($rvar[9])
+                                                            { "Volumes"   { $result = Get-SFVolumeRoot                                   | ConvertTo-JSON -depth 10 }
                                                             }
                                                         }
                                       "LineOfService"  { switch($rvar[8])
                                                             { "DataProtectionLineOfService"
-                                                                            { $result = Get-SFDataProtectionLOS -PSId ($rvar[9])           | ConvertTo-JSON -depth 10 }
+                                                                            { $result = Get-SFDataProtectionLOS -PSId ($rvar[9])         | ConvertTo-JSON -depth 10 }
                                                             }
                                                         }
                                     }
-                                  }
+                             }
+                "Chassis"    {  switch($rvar[7])
+                                    {   "Power"        { switch($rvar[8])
+                                                                    { "PowerSupplies" 
+                                                                            { $result = Get-SFChassisPowerSupplies -ShelfName ($rvar[6]) -PSNum ($rvar[9]) | ConvertTo-JSON -Depth 10     }
+                                                                    }
+                                                       }
+                                    }
+                             }
               }    
           }
         11{ switch($rvar[5])
             { "Storage"      { switch($rvar[7])
-                                  { "Volumes"     { switch($rvar[9])
-                                                      { "Snapshots"   { $result = Get-SFSnapshot -VolName ($rvar[8]) -SnapId ($rvar[10]) | ConvertTo-JSON -depth 10      }
+                                  { "StoragePools"    { switch($rvar[9])
+                                                            { "Volumes"   { $result = Get-SFVolume -VolumeName ($rvar[10])                         | ConvertTo-JSON -depth 10 }
+                                                            }
                                                       }
-                                                  }
-                                  }
-                                }
+                                  }                   
+                             }
             }    
         }
       }

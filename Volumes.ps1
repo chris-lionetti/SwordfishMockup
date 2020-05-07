@@ -3,15 +3,16 @@ function Get-SFVolumeRoot {
   process
   	{ 	$VolCount=0
 		$Members=@()
+		$Pool=Get-NSPool
 		foreach ( $Volume in (Get-NSVolume) )
-			{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Volume.name 
+			{	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$Pool.name+'/Volumes/'+$Volume.name 
 								 }
 				$VolCount=$VolCount+1
 				$Members+=$LocalMembers
 			}
 		$VolFolder =[ordered]@{	
 						'@Redfish.Copyright'	= 	$RedfishCopyright;
-						'@odata.id'				=	'/redfish/v1//Storage/'+$NimbleSerial+'/Volumes';
+						'@odata.id'				=	'/redfish/v1//Storage/'+$NimbleSerial+'/StoragePools/'+$Pool.name+'/Volumes';
 						'@odata.type'			=	'#VolumeCollection.VolumesCollection';
 						Name					=	'NimbleVolumeCollection';
 						'Members@odata.count'	=	$VolCount;
@@ -20,6 +21,30 @@ function Get-SFVolumeRoot {
 		return $VolFolder
 	}
 }
+
+function Get-SFVolumeRootCore {	
+	param()
+	process
+		{ 	$VolCount=0
+		  $Members=@()
+		  $Pool=Get-NSPool
+		  foreach ( $Volume in (Get-NSVolume) )
+			  {	$LocalMembers = @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$Pool.name+'/Volumes/'+$Volume.name 
+								   }
+				  $VolCount=$VolCount+1
+				  $Members+=$LocalMembers
+			  }
+		  $VolFolder =[ordered]@{	
+						  '@Redfish.Copyright'	= 	$RedfishCopyright;
+						  '@odata.id'				=	'/redfish/v1//Storage/'+$NimbleSerial+'/Volumes';
+						  '@odata.type'			=	'#VolumeCollection.VolumesCollection';
+						  Name					=	'NimbleVolumeCollection';
+						  'Members@odata.count'	=	$VolCount;
+						  Members					=	$Members
+								}
+		  return $VolFolder
+	  }
+  }
 
 function Get-SFVolume {
    param(	$VolumeName,
@@ -56,7 +81,7 @@ function Get-SFVolume {
 		}
 	$VolObj =[ordered]@{
 				'@Redfish.Copyright'	= 	$RedfishCopyright;
-				'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Volume.name;
+				'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$Pool+'/Volumes/'+$Volume.name;
 				'@odata.type'			=	'#Volume.v1_4_0.Volume';
 				Id						=	$Volume.id;
 				Name					=	$Volume.name;
@@ -109,7 +134,7 @@ function Get-SFVolume {
 											 )			
 				}
 	if ( (get-nssnapshot -vol_name $VolumeName) -and $Experimental )
-		{	$Snapss = @(	@{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$VolumeName+'/Snapshots'
+		{	$Snapss = @(	@{	'@odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$Pool+'/Volumes/'+$VolumeName+'/Snapshots'
 							 }
 					   )
 			$VolObj+= @{	Snapshots = $Snapss

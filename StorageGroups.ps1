@@ -5,14 +5,14 @@ process{
 	$Members=@()
 	$AccessControlMaps = ( Get-NSAccessControlRecord )
 	foreach ($Map in $AccessControlMaps)
-		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups/'+$Map.id
+		{	$LocalMembers = @( @{	'@odata.id'		=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Connections/'+$Map.id
                                 }
                              )
 			$Members+=$localMembers
 		}
 	$SGRoot = @{	'@Redfish.Copyright'	= 	$RedfishCopyright;
-					'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups';
-					'@odata.type'			=	'#StorageGroup.v1_2_1.StorageGroups';
+					'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Connections';
+					'@odata.type'			=	'#ConnectionsCollection.ConnectionsCollection';
 					Name					=	'Nimble Storage Groups (Access Control Maps)';
 					'Members@odata.count'	=	($AccessControlMaps).count;
 					Members					=	@( $Members )
@@ -40,29 +40,31 @@ process{
 		{ 	$Igroup = ''
 		}				
 	if ( -not $IGroup.target_subnets -and $IGroup)
-		{	$ServerEPG += @{ 	'@odata.id'	= 	'/redfish/v1/Storage/'+$NimbleSerial+'/EndpointGroups/'+$NimbleSerial+'_AllSubnets'	}
+		{	$ServerEPG += @{ 	'@odata.id'	= 	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Zones/'+$NimbleSerial+'_AllSubnets'	}
 		}
     $SG = [ordered]@{	
 				'@Redfish.Copyright'    = 	$RedfishCopyright;
-				'@odata.id'             =	'/redfish/v1/Storage/'+$NimbleSerial+'/StorageGroups/'+$Map.id;
-				'@odata.type'           =	'#StorageGroup.v1_2_1.StorageGroup';
+				'@odata.id'             =	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Connections/'+$Map.id;
+				'@odata.type'           =	'#Connections.v1_0_0.Connections';
 				Name                    =	$Map.id;
-                Description             =	'Storage Access Control Group connecting Endpoints to Volumes';
+                Description             =	'Access Control Group connecting Endpoints to Volumes';
                 'ClientEndpointGroups@odata.count'	=	1;	
-				ClientEndpointGroups    =	@(	@{ 	'@odata.id' 		=	'/redfish/v1/Storage/'+$NimbleSerial+'/EndpointGroups/'+$Map.Initiator_Group_id 
-												 }
+				Zones    				=	@(	@{ 	'@odata.id' 	=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Zones/'+$Map.Initiator_Group_id 		};
+												$ServerEPG
 											 ); 
-				ServerEndpointGroups	=	@( $ServerEPG
-											 );
-                AuthenticationMethod    =   $AuthMethod;
-                CHAPInformation         =   @{  InitiatorCHAPUser   =   $Map.Chap_user_name
-                                             };
-                MappedVolumes           =   @( @{   LogicalUnitNumber   =   $Map.lun;
-                                                    Volume              =   '/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Map.vol_name;  
+                Volumes           		=   @( @{   LogicalUnitNumber   =   $Map.lun;
+                                            		Volume              =   '/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/Default/Volumes/'+$Map.vol_name;  
                                                 }
                                              );
                 Id                      =   $map.id
 		   }
+	if ($Map.Chap_User)
+		{	$SG+=@{	AuthenticationMethod    =   $AuthMethod;
+					CHAPInformation         =   @{  CHAPUser   		= $Map.Chap_user_name;
+													CHAPPassword	= $null
+								 				 };
+				  }
+				}	
 	return $SG 
 }
 }

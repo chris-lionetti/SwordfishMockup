@@ -31,6 +31,8 @@ function Get-SFFabric {
 													Health	=	'OK'
 												};
 				Endpoints					=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints';
+				Connections					=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Connections';
+				Zones						=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Zones';
 					  
 				Links						=	@(	@{	'odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial
 													 }	

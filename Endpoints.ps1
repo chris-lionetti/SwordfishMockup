@@ -53,7 +53,7 @@ function Get-SFEndpointTarget {
 		 )
 	$NetworkConfig = (Get-NSNetworkConfig)
 	foreach ($set in $NetworkConfig)
-		{	$configname = $Set.name
+		{	$configname = $Set.name # example = Active or Backup
 			$AL = $set.array_list
 			$NL = $AL.Nic_list
 			foreach ( $EP in $NL)
@@ -68,9 +68,9 @@ function Get-SFEndpointTarget {
 						}	
 					$EPRoot = [ordered]@{
 									'@Redfish.Copyright'	= 	$RedfishCopyright;
-									'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$configname+"_"+$EP.name;
+									'@odata.id'				=	'/redfish/v1/Fabrics/'+$NimbleSerial+'/Endpoints/'+$EndpointName;
 									'@odata.type'			=	'#Endpoint.v1_4_0.Endpoint';
-									Name					=	$configname+"_"+$EP.name;
+									Name					=	$EndpointName;
 									ConnectedEntities		=	@(	@{	EntityRole			=	'Target';
 																		EntityType			=	'NetworkController';
 																	 }
@@ -89,7 +89,10 @@ function Get-SFEndpointTarget {
 					if ( ( $configname+"_"+$EP.name ) -like $EndpointName)
 					{ 	return $EPRoot
 					}
-}		}		}
+				}		
+		}
+	return
+}
 
 function Get-SFEndpointInitiator {
 param( 	$EndpointName	
@@ -104,7 +107,7 @@ process{
 							ConnectedEntities		=	@(	 @{	EntityRole			=	'Initiator';
 															  }
 														 ); 
-							Description				=	$configname+" configuration, Port named "+$EP.name+". iSCSI Target.";
+							Description				=	"Device named "+$Initiator.label+". Registered iSCSI Initiator.";
 							EndpointProtocol		=	'iSCSI';
 							IPv4Address				=	$Initiator.Ip_Address;
 							Id						=	$Initiator.id;

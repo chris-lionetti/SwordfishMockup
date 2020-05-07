@@ -26,7 +26,7 @@ param(	$Poolname
 	 )
 process{
 	$DObj=@()
-	$Pool = ( Get-NSPool -name $Poolname )
+	$Pool = ( Get-NSPool )
 	$disks = ( Get-NSDisk )
 	$DiskCount=0
 	foreach ($disk in $disks)
@@ -38,7 +38,8 @@ process{
 		}
 	$VolsObj=@()
 	foreach ( $Vol in ($Pool.vol_list) )
-		{	$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/Storage/'+$NimbleSerial+'/Volumes/'+$Vol.name
+		{	# Nimble only has one pool, so assuming that all volumes are listed under that single pool
+			$VolObj =	@{ '@odata.id'	= 	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools/'+$Pool.name+'/Volumes/'+$Vol.name
 						 }
 			$VolsObj+=$VolObj
 		}
@@ -71,6 +72,8 @@ process{
 				Encryption						=	$True;	
 				SupportedRAIDTypes				=	'RAID6TP'
 			   }
-	return $PoolObj 
+	if ($Poolname -like $Pool.name )
+		{	return $PoolObj 
+		}
 }
 }
