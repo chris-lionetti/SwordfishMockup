@@ -30,7 +30,7 @@ process{
 	$disks = ( Get-NSDisk )
 	$DiskCount=0
 	foreach ($disk in $disks)
-		{	$localDiskname="Disk.Shelf_"+$($disk.vshelf_id)+".Location_"+$($disk.slot)
+		{	$localDiskname="DiskShelf"+$($disk.vshelf_id)+"Location"+$($disk.slot)
 			$DriveObj =	@{ '@odata.id'	= 	'/redfish/v1/Chassis/'+$NimbleSerial+'/Drives/'+$localdiskname
 							}
 			$DiskCount+=1

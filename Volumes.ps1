@@ -92,8 +92,9 @@ function Get-SFVolume {
 				MaxBlockSizeBytes		=	$Volume.block_size;
 				Manufacturer			=	'HPENimbleStorage';
 				Encrypted				=	$Vol_Encryption;
-				EncryptionTypes			=	'ControllerAssisted';
-				ProvisioningPolicy		=	$Vol_ProvisioningPolicy;
+				EncryptionTypes			=	@('ControllerAssisted');
+				SupportsThinProvisioning=	$True;
+				ProvisioningPolocy		=	'Thin';	
 				Compressed				=	$True;
 				Deduplicated			=	$Volume.dedupe_enabled;
 				DisplayName				=	$Volume.Full_name;
