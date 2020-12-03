@@ -82,3 +82,27 @@ process{
 	return $DriveObj
 }
 }
+
+function Get-SFDriveRootInStorage {
+	param (
+		  )
+	process{
+		$disks = ( Get-NSDisk )
+		$DrivesObj=@()
+		foreach ($disk in $disks)
+			{	$localDiskname="DiskShelf"+$($disk.vshelf_id)+"Location"+$($disk.slot)
+				$DriveObj=@{ '@odata.id'	= 	"/redfish/v1/Chassis/"+$Disk.shelf_serial+"/Drives/"+$localDiskname
+						   }
+				$DrivesObj+=$DriveObj
+			}
+		$Drives=[ordered]@{	'@Redfish.Copyright'	= 	$RedfishCopyright;
+							'@odata.type'			= 	"#DriveCollection.DriveCollection";
+							'@odata.id'				= 	"/redfish/v1/Storage/"+$NimbleSerial+"/Drives";
+							Id						= 	"StorageDriveCollection";
+							Name					= 	"HPENimbleDrives";
+							Description				=	"A collection of Drive that this storage system uses, may span multiple enclosures";
+							Members					=	$DrivesObj;
+						   }
+		return $Drives
+		}
+	}

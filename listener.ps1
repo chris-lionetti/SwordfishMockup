@@ -28,6 +28,7 @@ $Global:SwordfishCopyright  =	"Copyright 2020 HPE and SNIA"
 . .\Zones.ps1
 . .\StoragePools.ps1
 . .\StorageGroups.ps1
+. .\Controllers.ps1
 . .\StorageSystems.ps1
 . .\AccountService.ps1
 . .\Systems.ps1
@@ -117,8 +118,8 @@ while ($DontEndYet)
                                             "StorageControllers"            { $result = Get-SFStorageControllerRoot   | ConvertTo-JSON -Depth 10 }
                                             "StoragePools"                  { $result = Get-SFPoolRoot                | ConvertTo-JSON -Depth 10 }
                                             "ConsistencyGroups"             { $result = Get-SFConsistencyGroupRoot    | ConvertTo-JSON -Depth 10 } 
-                                            "LineOfService"                 { write-host "asking for LOS"
-                                                                              $result = Get-SFLineOfServiceRoot       | ConvertTo-JSON -Depth 10 }                   
+                                            "LineOfService"                 { $result = Get-SFLineOfServiceRoot       | ConvertTo-JSON -Depth 10 }
+                                            "Drives"                        { $result = Get-SFDriveRootInStorage      | ConvertTo-JSON -Depth 10 }                 
                                           } 
                                       }
                                 }
@@ -130,6 +131,11 @@ while ($DontEndYet)
                                         } 
                                     }
                               }
+                "AccountService"  { switch($rvar[6]) # And example of this would be HTTP://localhost:5000/redfish/v1/AccountService/Roles/administrator
+                                        {   "Roles"     { $result = Get-SFAccountRole   -RoleName  $rvar[7]             | ConvertTo-JSON -Depth 10  } 
+                                            "Accounts"  { $result = Get-SFAccount       -AccountId $rvar[7]             | ConvertTo-JSON -Depth 10  }
+                                  } 
+                              }  
               }
           }
         9 { switch($rvar[5])                      # This reqest will add a subquery under the individual serial name listed in the above request

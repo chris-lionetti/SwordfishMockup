@@ -11,7 +11,7 @@ function Get-SFChassisRoot {
 							'@odata.type'			=	"#ChassisCollection.ChassisCollection";
 							'@odata.id'				=	'/redfish/v1/Chassis';
 							Name					=	"Chassis Collection";
-							'Members@odata.count' 	= 	($Shelfs).count;
+							'Members@odata.count' 	= 	1;
 							Members		 			=	@( $Members )
 					   }
 	return $Chassis	
@@ -35,8 +35,8 @@ process	{	$Shelf = ( Get-NSShelf | where-object {$_.serial -like $ShelfName } )
 							"@Redfish.Copyright" 	= $RedfishCopyright;
 							"@odata.id"				= '/redfish/v1/Chassis/'+($Shelf.serial);
 							"@odata.type"			= '#Chassis.v1_11_0.Chassis';
-							Id						= ($Shelf.id);
-							Name					= ($Shelf.serial);
+							Id						= ($Shelf.serial);
+							Name					= ($Shelf.id);
 							ChassisType				= "Shelf";
 							Manufacturer			= "HPE-Nimble";
 							Model					= ($Shelf.model);
@@ -143,10 +143,34 @@ function Get-SFChassisPowerSupplies{
 			$PSNum
 		 )
 	process{
-		$Shelf = (Get-NSShelf | where-object {$_.serial -like $ShelfName })
-		$PSCount=1
+		$Shelf 				= 	(Get-NSShelf | where-object {$_.serial -like $ShelfName })
+		$RedundancySet		=	@()
+		$PSCount			=	1
 		foreach ($PS in ($Shelf).chassis_sensors )
-			{	if ( $($PS.status) -like 'OK' ) 
+			{	$RedundancySet+= 	@{ '@odata.id'	="/redfish/v1/Chassis/"+($Shelf.serial)+"/Power/PowerSupplies/"+$PSCount	
+									 };
+				$PSCount+=1
+			}
+		if ( $($PS.status) -like 'OK' ) 
+			{ $LocalState="Enabled" 
+			} else 
+			{ $LocalState="Faulted" 
+			}
+		$TotalPSCount		= 	( ($Shelf).chassis_sensors).count
+		$RedundancyObject	=	@{ 	MaxNumSupported		=	$TotalPSCount ;
+									MinNumNeeded		=	$TotalPSCount-1;
+									Mode				=	'N+1';
+									Name				=	$PSNum;
+									RedundancyEnabled	=	$True;
+									RedundancySet		=	$RedundancySet;
+									Status				= 	@{		State	= $LocalState;
+																	Health	= ($PS.Status)
+															 }
+								 }
+		$PSCount			=	1
+		foreach ($PS in ($Shelf).chassis_sensors )
+			{	
+				if ( $($PS.status) -like 'OK' ) 
 					{ $LocalState="Enabled" } 
 					else 
 					{ $LocalState="Faulted" }
@@ -173,7 +197,8 @@ function Get-SFChassisPowerSupplies{
 																	MinimumFrequency=	50;
 																	Maximumfrequency=	60
 																 }
-															 )
+															 );
+									RedundancySet		=	$RedundancyObject							 
 							   }
 				if ( $Shelf -and ( $PSNum -like $PSCount ) )
 					{	return $PowerSupply

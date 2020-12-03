@@ -20,7 +20,7 @@ function Get-SFRedfishRoot {
 						Id					=	"RootService";
 						Name				=	"Root Service";
 						Chassis				=	@{	'@odata.id'	=	'/redfish/v1/Chassis'			};
-						StorageSystems		=	@{	'@odata.id'	=	'/redfish/v1/Storage'			};
+						Storage				=	@{	'@odata.id'	=	'/redfish/v1/Storage'			};
 						AccountService		=	@{	'@odata.id'	=	'/redfish/v1/AccountService'	};
 						EventService		=	@{	'@odata.id'	=	'/redfish/v1/EventService'		};
 						LineOfService		=	@{	'@odata.id' =	'/redfish/v1/LineOfService'		};

@@ -14,7 +14,7 @@ process{
 					'@odata.id'				=	'/redfish/v1/Storage/'+$NimbleSerial+'/StoragePools';
 					'@odata.type'			=	'#StoragePoolCollection.StoragePoolCollection';
 					Name					=	'NimblePoolCollection';
-					'Members@odata.count'	=	$Pools.count;
+					'Members@odata.count'	=	$Members.count;
 					Members					=	$Members
 				  }
 	return $PoolFolder

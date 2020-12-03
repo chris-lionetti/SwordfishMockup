@@ -26,7 +26,7 @@ function Get-SFFabric {
 				'@odata.id'					=	'/redfish/v1/Fabrics/'+$NimbleSerial;
 				Name						=	$Array.name;
 				Id							=	$Array.id;
-				Description					=	"Fabric for "+$Array.description;
+				Description					=	"Fabric for Nimble Array model "+$Array.extended_model+' named '+$Array.name;
 				Status						=	@{	State 	=	'Enabled';
 													Health	=	'OK'
 												};
@@ -36,7 +36,6 @@ function Get-SFFabric {
 					  
 				Links						=	@(	@{	'odata.id'	=	'/redfish/v1/Storage/'+$NimbleSerial
 													 }	
-
 												 )
 				}
 		if ($Array.serial -like $ArrayName) 

@@ -26,6 +26,7 @@ $Global:SwordfishCopyright  =	"Copyright 2016-2019 HPE and SNIA"
 . .\Endpoints.ps1
 . .\Zones.ps1
 . .\StoragePools.ps1
+. .\Controllers.ps1
 . .\StorageGroups.ps1
 . .\StorageSystems.ps1
 . .\AccountService.ps1
@@ -266,20 +267,20 @@ function WriteA-File
         write-host "The path is $MyArrayPath and the Serial is $MyArraySerial"
         $Data= ( Get-SFStorageSystem $MyArraySerial | convertTo-JSON -depth 10) 
         WriteA-File -FileData $Data -Folder $MyArrayPath
-
-        # Storage Controllerss
-        $Data=( Get-SFStorageControllerRoot | convertTo-JSON -depth 10) 
-        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\StorageControllers' )
         
-        $MyPools= $(Get-SFStorageControllerRoot).Members
-        foreach($MyPool in $MyPools)
-        {   $PathRaw=$MyPool.'@odata.id'
-            $MySPGPath=$MyMockupDir+( $PathRaw.replace('/','\') )
+        # Storage Controllers
+        $Data=( Get-SFControllerRoot | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\StorageControllers' )
+
+        $MyControllers= $(Get-SFControllerRoot).Members
+        foreach($MyController in $MyControllers)
+        {   $PathRaw=$MyController.'@odata.id'
+            $MySCPath=$MyMockupDir+( $PathRaw.replace('/','\') )
             $Split=$PathRaw.split('/')
-            $MySPG=$Split[$Split.count-1]   # Get the last drive name from the item
-            write-host "The path is $MySPGPath and the StoragePool is $MySPG"
-            $Data = ( Get-SFStorageController $MySPG | convertTo-JSON -depth 10) 
-            WriteA-File -FileData $Data -Folder $MySPGPath
+            $MySC=$Split[$Split.count-1]   # Get the last drive name from the item
+            write-host "The path is $MySCPath and the StorageController is $MySC"
+            $Data = ( Get-SFController $MySC | convertTo-JSON -depth 10) 
+            WriteA-File -FileData $Data -Folder $MySCPath
         }
 
         # Storage Pools
@@ -299,6 +300,9 @@ function WriteA-File
         # Volumes
         $Data=( Get-SFVolumeRoot | convertTo-JSON -depth 10) 
         WriteA-File -FileData $Data -Folder ( $MyArrayPath+'\Volumes' )
+        
+        $Data=( Get-SFVolumeRootCore | convertTo-JSON -depth 10) 
+        WriteA-File -FileData $Data -Folder ( $MyArrayPath+'StoragePools\Default\\Volumes' )
         
         $MyVols= $(Get-SFVolumeRoot).Members
         foreach($MyVol in $MyVols)
