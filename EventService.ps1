@@ -51,7 +51,7 @@ function Get-SFEvent {
         if (Get-NSEvent -id $EventId)
             {   $Event =  [ordered]@{   '@Redfish.Copyright'	= 	$RedfishCopyright;
                                         '@odata.id'				=	'/redfish/v1/EventService/Event/'+$event.id;
-                                        '@odata.type'			=	'#Event.v1.4.2.Event';
+                                        '@odata.type'			=	'#Event.v1_6_0.Event';
                                         Name					=   'Event Array';
                                         Id                      =   $event.id;
                                         Events                  =   @{  EventType   =   $event.category;

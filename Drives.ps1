@@ -44,7 +44,7 @@ process{
 	}
 	if ($Shelf.serial -like $disk.shelf_serial )
 		{	$localDiskname="DiskShelf"+$($disk.vshelf_id)+"Location"+$($disk.slot)
-			if ( $disk.state -eq "in use")
+			if ( $disk.state -eq "OK")
 				{	$LocalLED="Lit"	
 				} else
 				{	$LocalLED="Off"

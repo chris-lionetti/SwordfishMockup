@@ -45,7 +45,7 @@ process	{	$Shelf = ( Get-NSShelf | where-object {$_.serial -like $ShelfName } )
 							PartNumber				= ($Shelf.model_ext);
 							IndicatorLED			= $NimbleShelfLED;
 							PowerState				= 'On';
-							EnviornmentalClass		= 'A2';
+							EnvironmentalClass		= 'A2';
 							Status					= @{	State 		= "Enabled";
 															Health		= $NimbleHealthStatus	
 											   		   };

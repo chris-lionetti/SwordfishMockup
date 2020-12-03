@@ -1,6 +1,6 @@
 $username = "admin"                                             # This is the Array username                                                           
 $password = ConvertTo-SecureString "admin" -AsPlainText -Force  # This is the Array Password, change admin to YOUR password                                                              
-$ArrayIP  = '192.168.1.60'                                      # This is the Array IP Address                                                            
+$ArrayIP  = '10.2.101.220'                                      # This is the Array IP Address                                                            
 ##############################################################################################################################
 $psCred = ( New-Object System.Management.Automation.PSCredential($username, $password) )
 if ( -not (get-module -ListAvailable -name HPENimblePowerShellToolkit ) )
@@ -8,7 +8,7 @@ if ( -not (get-module -ListAvailable -name HPENimblePowerShellToolkit ) )
         exit
     }
 write-warning "Ensure that Port 5000 is currently not listened to."
-([System.Net.Sockets.TcpListener]5000).Stop()
+([System.Net.Sockets.TcpListener]80).Stop()
 import-module -name HPENimblePowerShellToolkit
 connect-nsgroup -Group "$ArrayIP" -Credential $psCred -IgnoreServerCertificate
 
