@@ -40,11 +40,25 @@ process{
 	{	$Loc = "DiskShelf"+$($rawdisk.vshelf_id)+"Location"+$($rawdisk.slot)
 		if ($diskname -like $Loc)
 		{	$disk = $rawdisk
+			if ($disk.state -eq "in use" -and $Disk.raid_state -eq "okay")
+				{	$DriveStatus = @{	State	=	'Enabled';
+										Health 	=	'OK'
+			  						};
+				} else 
+				{	$DriveStatus = @{	State	=	'Disabled';
+										Health 	=	'Warning'
+			  						};	
+				}
 		}
 	}
+	# Valid States for Redfish are; Enabled, Disabled, StandbyOffline, StandbySpare, InTest, Starting, Absent, UnavailableOffline, Deferring, Quiesced, Updating, Qualified
+	# Value Health for Redfish are; OK, Critical, Warning, 
+	# Nimble Drive object is Object.state = valid, in use, failed, absent, removed, void, t_fail, foreign
+	# Nimble Drive object is Object.raid_state = N/A, okay, resynchronizing, spare, faulty
+	if 
 	if ($Shelf.serial -like $disk.shelf_serial )
 		{	$localDiskname="DiskShelf"+$($disk.vshelf_id)+"Location"+$($disk.slot)
-			if ( $disk.state -eq "OK")
+			if ( $disk.state -eq "in use")
 				{	$LocalLED="Lit"	
 				} else
 				{	$LocalLED="Off"
@@ -57,9 +71,7 @@ process{
 						 			IndicatorLED			=	$LocalLED;
 						 			Model					=	$disk.model;
 						 			Revision				=	$disk.firmware_version;
-						 			Status					=	@{	State	=	$disk.state;
-																	Health 	=	$disk.raid_state
-									 							 };
+						 			Status					=	$DriveStatus;
 									CapacityBytes			=	$disk.size;
 							 		FailurePredicted		=	$disk.raid_state;
 							 		Protocol				=	"SAS";

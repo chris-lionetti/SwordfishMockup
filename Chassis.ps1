@@ -31,6 +31,17 @@ process	{	$Shelf = ( Get-NSShelf | where-object {$_.serial -like $ShelfName } )
 				} else 
 				{	$NimbleHealthStatus = "Warning" 
 				}
+			# Valid States for Redfish are; Enabled, Disabled, StandbyOffline, StandbySpare, InTest, Starting, Absent, UnavailableOffline, Deferring, Quiesced, Updating, Qualified
+			# Value Health for Redfish are; OK, Critical, Warning
+			if ( ($Shelf.chassis_sensors)[0].status -eq 'OK' -and ($Shelf.chassis_sensors)[1].status -eq "OK")
+				{	$ShelfStatus = @{	State	=	'Enabled';
+										Health 	=	'OK'
+			  						};
+				} else 
+				{	$ShelfStatus = @{	State	=	'Disabled';
+										Health 	=	'Warning'
+			  						};	
+				}
 			$ShelfObj=[ordered]@{
 							"@Redfish.Copyright" 	= $RedfishCopyright;
 							"@odata.id"				= '/redfish/v1/Chassis/'+($Shelf.serial);
@@ -46,9 +57,7 @@ process	{	$Shelf = ( Get-NSShelf | where-object {$_.serial -like $ShelfName } )
 							IndicatorLED			= $NimbleShelfLED;
 							PowerState				= 'On';
 							EnvironmentalClass		= 'A2';
-							Status					= @{	State 		= "Enabled";
-															Health		= $NimbleHealthStatus	
-											   		   };
+							Status					= $ShelfStatus;
 							Thermal					= @{	'@odata.id'	= '/redfish/v1/Chassis/'+($Shelf.serial)+'/Thermal'	
 													   };
 							Power					= @{	'@odata.id'	= '/redfish/v1/Chassis/'+($Shelf.serial)+'/Power'	
